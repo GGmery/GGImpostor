@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impostor Streamer - ggmery</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+
+    <div id="menu-inicio">
+        <h1>Impostor Streamer</h1>
+        <input type="text" id="nombreInput" placeholder="Tu nombre de Streamer">
+        
+        <button onclick="crearPartida()">Crear Nueva Sala</button>
+        <hr>
+        <p style="font-size: 0.8rem; margin-bottom: 0.5rem;">¿Tienes un código?</p>
+        <input type="text" id="codigoInput" placeholder="Ej: A4X1">
+        <button onclick="unirsePartida()" style="background-color: #3f3f46;">Unirse a Sala</button>
+    </div>
+
+    <div id="sala-espera" style="display: none;">
+        <h2>Código de Sala:</h2>
+        <span id="mostrarCodigo">----</span>
+        
+        <div id="lista-jugadores"></div>
+
+        <button id="btnIniciar" style="display: none;" onclick="iniciarJuego()">¡Empezar Directo!</button>
+        <p id="esperandoTexto" style="font-size: 0.8rem; color: #71717a;">Esperando a que el líder empiece...</p>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
