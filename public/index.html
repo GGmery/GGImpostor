@@ -9,9 +9,33 @@
 </head>
 <body>
 
+    <button id="toggleTheme" class="theme-toggle" onclick="toggleTheme()">🌙</button>
+
     <div id="menu-inicio">
         <h1>Impostor Streamer</h1>
         <input type="text" id="nombreInput" placeholder="Tu nombre de Streamer">
+        
+        <p class="label-text">Elige tu personaje:</p>
+        <div id="selector-personajes">
+            <div class="personaje" data-color="red" onclick="seleccionarPersonaje('red')">
+                <div class="personaje-avatar" style="background-color: #ff4444;">🚀</div>
+            </div>
+            <div class="personaje" data-color="blue" onclick="seleccionarPersonaje('blue')">
+                <div class="personaje-avatar" style="background-color: #4444ff;">🚀</div>
+            </div>
+            <div class="personaje" data-color="green" onclick="seleccionarPersonaje('green')">
+                <div class="personaje-avatar" style="background-color: #44ff44;">🚀</div>
+            </div>
+            <div class="personaje" data-color="yellow" onclick="seleccionarPersonaje('yellow')">
+                <div class="personaje-avatar" style="background-color: #ffff44;">🚀</div>
+            </div>
+            <div class="personaje" data-color="purple" onclick="seleccionarPersonaje('purple')">
+                <div class="personaje-avatar" style="background-color: #bb44ff;">🚀</div>
+            </div>
+            <div class="personaje" data-color="orange" onclick="seleccionarPersonaje('orange')">
+                <div class="personaje-avatar" style="background-color: #ff8844;">🚀</div>
+            </div>
+        </div>
         
         <button onclick="crearPartida()">Crear Nueva Sala</button>
         <hr>
