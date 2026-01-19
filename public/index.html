@@ -9,7 +9,12 @@
 </head>
 <body>
 
-    <button id="toggleTheme" class="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <div class="theme-toggle">
+        <input type="checkbox" id="toggleTheme" class="toggle-checkbox">
+        <label for="toggleTheme" class="toggle-label">
+            <span class="toggle-ball"></span>
+        </label>
+    </div>
 
     <div id="menu-inicio">
         <h1>Impostor Streamer</h1>
@@ -34,6 +39,12 @@
             </div>
             <div class="personaje" data-color="orange" onclick="seleccionarPersonaje('orange')">
                 <div class="personaje-avatar" style="background-color: #ff8844;">🚀</div>
+            </div>
+            <div class="personaje" data-color="pink" onclick="seleccionarPersonaje('pink')">
+                <div class="personaje-avatar" style="background-color: #ff44aa;">🚀</div>
+            </div>
+            <div class="personaje" data-color="cyan" onclick="seleccionarPersonaje('cyan')">
+                <div class="personaje-avatar" style="background-color: #44ffff;">🚀</div>
             </div>
         </div>
         

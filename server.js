@@ -24,6 +24,7 @@ io.on('connection', (socket) => {
         salas[codigo].jugadores[socket.id] = {
             id: socket.id,
             nombre: datos.nombre,
+            avatar: datos.avatar,
             esLider: true
         };
 
@@ -34,18 +35,26 @@ io.on('connection', (socket) => {
     // ESCUCHA PARA UNIRSE
     socket.on('unirseASala', (datos) => {
         const codigo = datos.codigo;
-        if (salas[codigo]) {
-            socket.join(codigo);
-            salas[codigo].jugadores[socket.id] = {
-                id: socket.id,
-                nombre: datos.nombre,
-                esLider: false
-            };
-            io.to(codigo).emit('actualizarListaJugadores', Object.values(salas[codigo].jugadores));
-            socket.emit('unionExitosa', { codigo });
-        } else {
+        if (!salas[codigo]) {
             socket.emit('errorUnion', 'La sala no existe');
+            return;
         }
+        
+        const cantidadJugadores = Object.keys(salas[codigo].jugadores).length;
+        if (cantidadJugadores >= 8) {
+            socket.emit('errorUnion', 'La sala está llena (máximo 8 jugadores)');
+            return;
+        }
+        
+        socket.join(codigo);
+        salas[codigo].jugadores[socket.id] = {
+            id: socket.id,
+            nombre: datos.nombre,
+            avatar: datos.avatar,
+            esLider: false
+        };
+        io.to(codigo).emit('actualizarListaJugadores', Object.values(salas[codigo].jugadores));
+        socket.emit('unionExitosa', { codigo });
     });
 
     socket.on('disconnect', () => {

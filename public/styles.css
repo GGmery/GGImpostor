@@ -8,18 +8,20 @@
     --border-color: #2d2d30;
     --input-bg: #0e0e10;
     --input-border: #3f3f46;
+    --shadow-color: rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="light"] {
-    --bg-color: #f0f0f5;
+    --bg-color: #f5f7fa;
     --card-bg: #ffffff;
     --twitch-purple: #9147ff;
     --twitch-hover: #772ce8;
-    --text-color: #1a1a1a;
+    --text-color: #2c3e50;
     --accent-color: #00cc66;
-    --border-color: #e0e0e5;
-    --input-bg: #f8f8fa;
-    --input-border: #d0d0d5;
+    --border-color: #dde1e7;
+    --input-bg: #f8f9fb;
+    --input-border: #cbd5e0;
+    --shadow-color: rgba(0, 0, 0, 0.1);
 }
 
 body {
@@ -31,18 +33,21 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #menu-inicio, #sala-espera {
     background: var(--card-bg);
     padding: 2rem;
     border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    box-shadow: 0 10px 30px var(--shadow-color);
     text-align: center;
     width: 350px;
     border: 1px solid var(--border-color);
-    transition: background 0.3s ease, box-shadow 0.3s ease;
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 h1 {
@@ -62,7 +67,7 @@ input {
     background: var(--input-bg);
     color: var(--text-color);
     box-sizing: border-box;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 input:focus {
@@ -98,20 +103,60 @@ hr {
     position: fixed;
     top: 20px;
     right: 20px;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--card-bg);
-    border: 2px solid var(--border-color);
-    font-size: 1.5rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
     z-index: 1000;
 }
 
-.theme-toggle:hover {
-    transform: scale(1.1) rotate(20deg);
+.toggle-checkbox {
+    display: none;
+}
+
+.toggle-label {
+    display: block;
+    width: 60px;
+    height: 30px;
+    background: var(--input-border);
+    border-radius: 30px;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.toggle-ball {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 24px;
+    height: 24px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-ball::before {
+    content: '🌙';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+}
+
+.toggle-checkbox:checked + .toggle-label {
     background: var(--twitch-purple);
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-ball {
+    transform: translateX(30px);
+}
+
+.toggle-checkbox:checked + .toggle-label .toggle-ball::before {
+    content: '☀️';
+}
+
+.toggle-label:hover {
+    box-shadow: 0 4px 12px var(--shadow-color);
 }
 
 .label-text {
@@ -122,7 +167,7 @@ hr {
 
 #selector-personajes {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
     margin-bottom: 1.5rem;
 }
@@ -154,7 +199,7 @@ hr {
     justify-content: center;
     font-size: 2rem;
     border: 3px solid var(--border-color);
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 0 auto;
 }
 
@@ -164,7 +209,7 @@ hr {
     padding: 10px;
     border-radius: 6px;
     margin-bottom: 1.5rem;
-    transition: background 0.3s ease;
+    transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #mostrarCodigo {

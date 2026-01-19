@@ -7,20 +7,21 @@ function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'light' ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', newTheme);
-    
-    const toggleBtn = document.getElementById('toggleTheme');
-    toggleBtn.textContent = newTheme === 'light' ? '☀️' : '🌙';
-    
     localStorage.setItem('theme', newTheme);
 }
 
 // Cargar tema guardado
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme') || 'dark';
+    const toggle = document.getElementById('toggleTheme');
+    
     if (savedTheme === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
-        document.getElementById('toggleTheme').textContent = '☀️';
+        toggle.checked = true;
     }
+    
+    // Event listener para el toggle
+    toggle.addEventListener('change', toggleTheme);
     
     // Seleccionar primer personaje por defecto
     seleccionarPersonaje('red');
@@ -88,7 +89,8 @@ function entrarALaSala(codigo) {
 function actualizarListaUI(jugadores) {
     const colores = {
         red: '#ff4444', blue: '#4444ff', green: '#44ff44',
-        yellow: '#ffff44', purple: '#bb44ff', orange: '#ff8844'
+        yellow: '#ffff44', purple: '#bb44ff', orange: '#ff8844',
+        pink: '#ff44aa', cyan: '#44ffff'
     };
     
     const lista = document.getElementById('lista-jugadores');
