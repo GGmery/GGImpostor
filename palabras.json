@@ -1,17 +1,37 @@
 {
-  "palabras": [
-    "Suscribirse", "Algoritmo", "Miniatura", "Comentarios", "Campanita", "Youtuber", "Vlog", "Directo", "Shorts", "Desmonetizado",
-    "Streamer", "Suscripción", "Follow", "Baneo", "Raid", "Host", "Emote", "Bits", "Chat", "Moderador", "Stream Delay", "Donación",
-    "Clip", "Salseo", "Funado", "Prime", "Troleo", "Hype", "Spam", "Viewer", "Setup", "Croma", "Velada del Año", "Squid Craft Games",
-    "QSMP", "DEDsafio", "Egoland", "Temporada", "Spoiler", "Crossover", "Vegetta777", "Rubius", "Auronplay", "Madre Mia Willy",
-    "Chupa el perro", "Abduzcan", "Tortillaland", "Wilson", "Raspy", "Rodolfo el Reno", "V de Vegetta", "Vakypandy", "Limon 4K",
-    "Maduritas a 5km", "Piedra de la paciencia", "Ust", "Minust", "Don Gato", "El Titi", "Vicentín", "Arroz con cosas", "Wigetta",
-    "Libro Troll", "Batman de Andorra", "Flechipolla", "Pobre Diabla", "Cuchillo de cocina", "El cura de Tortilla", "Galleta de la fortuna",
-    "Minando fuera de cámara", "Isla de las Tentaciones", "Pueblo Pitufo", "Los dioses del pueblo", "Torretas de defensa",
-    "Willyrex con el báculo", "Panita", "La rata noruega", "Zarcort", "Karmaland 5", "Mangel", 
-    "Dalas Review", "Windy Girk", "Abby", "Orslok", "Titi", "Pambisito", "El rincón de Giorgio", "Pokémon Uranium", 
-    "El parque de juegos", "Shitposting", "Chat de Orslok", "Little Abby", "Mahe", "Mahecito", "Sr. Ciervo", "El niño del Oxxo", "Debates",
-    "IlloJuan", "LMDShow", "Masi", "Fuengirola", "El Bokeron", "Andrés", "Marcos", "Spiderman de Fuengirola", "Chiclana", "Juan Alberto",
-    "Muérete un poco", "Karaoke con Masi", "El Kiosko", "Eurotruck con el volante", "PlayStation 1", "Maricón el último", "Hermano", "Illo", "Wan"
-  ]
+  "categorias": {
+    "streamers_y_youtube": [
+      "Suscribirse", "Algoritmo", "Miniatura", "Comentarios", "Campanita", "Youtuber", "Vlog", "Directo", "Shorts", "Desmonetizado",
+      "Streamer", "Suscripción", "Follow", "Baneo", "Raid", "Host", "Emote", "Bits", "Chat", "Moderador", "Stream Delay", "Donación",
+      "Clip", "Salseo", "Funado", "Prime", "Troleo", "Hype", "Spam", "Viewer", "Setup", "Croma", "Velada del Año", "Squid Craft Games",
+      "QSMP", "DEDsafio", "Egoland", "Temporada", "Spoiler", "Crossover", "Vegetta777", "Rubius", "Auronplay", "Madre Mia Willy",
+      "Chupa el perro", "Abduzcan", "Tortillaland", "Wilson", "Raspy", "Rodolfo el Reno", "V de Vegetta", "Vakypandy", "Limon 4K",
+      "Maduritas a 5km", "Piedra de la paciencia", "Ust", "Minust", "Don Gato", "El Titi", "Vicentín", "Arroz con cosas", "Wigetta",
+      "Libro Troll", "Batman de Andorra", "Flechipolla", "Pobre Diabla", "Cuchillo de cocina", "El cura de Tortilla", "Galleta de la fortuna",
+      "Minando fuera de cámara", "Isla de las Tentaciones", "Pueblo Pitufo", "Los dioses del pueblo", "Torretas de defensa",
+      "Willyrex con el báculo", "Panita", "La rata noruega", "Zarcort", "Karmaland 5", "Mangel", 
+      "Dalas Review", "Windy Girk", "Abby", "Orslok", "Titi", "Pambisito", "El rincón de Giorgio", "Pokémon Uranium", 
+      "El parque de juegos", "Shitposting", "Chat de Orslok", "Little Abby", "Mahe", "Mahecito", "Sr. Ciervo", "El niño del Oxxo", "Debates",
+      "IlloJuan", "LMDShow", "Masi", "Fuengirola", "El Bokeron", "Andrés", "Marcos", "Spiderman de Fuengirola", "Chiclana", "Juan Alberto",
+      "Muérete un poco", "Karaoke con Masi", "El Kiosko", "Eurotruck con el volante", "PlayStation 1", "Maricón el último", "Hermano", "Illo", "Wan"
+    ],
+    "animales": [
+      "Ornitorrinco", "Capibara", "Axolote", "Panda Rojo", "Suricato", "Perezoso", "Calamar Gigante", "Hiena", "Camaleón", "Pingüino Emperador", "Gato"
+    ],
+    "series": [
+      "Breaking Bad", "Stranger Things", "The Office", "Juego de Tronos", "La Casa de Papel", "Black Mirror", "Succession", "The Last of Us", "Dark", "Better Call Saul"
+    ],
+    "peliculas": [
+      "Interestelar", "Pulp Fiction", "El Padrino", "Avatar", "Parásitos", "Inception", "Shrek", "Titanic", "Spider-Man: Into the Spider-Verse", "El Señor de los Anillos"
+    ],
+    "anime": [
+      "One Piece", "Naruto", "Dragon Ball Z", "Attack on Titan", "Death Note", "Jujutsu Kaisen", "Kimetsu no Yaiba", "Evangelion", "Hunter x Hunter", "My Hero Academia"
+    ],
+    "comidas": [
+      "Sushi", "Tacos al Pastor", "Pizza Napolitana", "Queso", "Paella", "Hamburguesa Wagyu", "Ramen", "Lasaña", "Ceviche", "Arepas", "Croissants"
+    ],
+    "paises": [
+      "Japón", "Islandia", "Australia", "México", "Suiza", "Egipto", "Canadá", "Brasil", "Tailandia", "Noruega", "España"
+    ]
+  }
 }

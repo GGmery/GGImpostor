@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GGImpostor</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
     <link rel="stylesheet" href="styles.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
@@ -17,42 +18,71 @@
     </div>
 
     <div id="menu-inicio">
-        <h1>GGImpostor</h1>
-        <input type="text" id="nombreInput" placeholder="Tu nombre">
-        
-        <p class="label-text">Elige tu personaje:</p>
-        <div id="selector-personajes">
-            <div class="personaje" data-icon="1" data-color="#bb44ff" onclick="seleccionarPersonaje('1')">
-                <img src="assets/icon (1).png" alt="Personaje 1" class="personaje-avatar" style="border-color: #bb44ff;">
-            </div>
-            <div class="personaje" data-icon="2" data-color="#4444ff" onclick="seleccionarPersonaje('2')">
-                <img src="assets/icon (2).png" alt="Personaje 2" class="personaje-avatar" style="border-color: #4444ff;">
-            </div>
-            <div class="personaje" data-icon="3" data-color="#44ff44" onclick="seleccionarPersonaje('3')">
-                <img src="assets/icon (3).png" alt="Personaje 3" class="personaje-avatar" style="border-color: #44ff44;">
-            </div>
-            <div class="personaje" data-icon="4" data-color="#ff4444" onclick="seleccionarPersonaje('4')">
-                <img src="assets/icon (4).png" alt="Personaje 4" class="personaje-avatar" style="border-color: #ff4444;">
-            </div>
-            <div class="personaje" data-icon="5" data-color="#ffff44" onclick="seleccionarPersonaje('5')">
-                <img src="assets/icon (5).png" alt="Personaje 5" class="personaje-avatar" style="border-color: #ffff44;">
-            </div>
-            <div class="personaje" data-icon="6" data-color="#ff8844" onclick="seleccionarPersonaje('6')">
-                <img src="assets/icon (6).png" alt="Personaje 6" class="personaje-avatar" style="border-color: #ff8844;">
-            </div>
-            <div class="personaje" data-icon="7" data-color="#ff44aa" onclick="seleccionarPersonaje('7')">
-                <img src="assets/icon (7).png" alt="Personaje 7" class="personaje-avatar" style="border-color: #ff44aa;">
-            </div>
-            <div class="personaje" data-icon="8" data-color="#44ffff" onclick="seleccionarPersonaje('8')">
-                <img src="assets/icon (8).png" alt="Personaje 8" class="personaje-avatar" style="border-color: #44ffff;">
+        <div class="inicio-header">
+            <div class="logo-container">
+                <h1 class="logo-title">
+                    <span class="logo-gg">GG</span><span class="logo-impostor">Impostor</span>
+                </h1>
+                <p class="logo-subtitle">🕵️ ¿Quién es el impostor?</p>
             </div>
         </div>
         
-        <button onclick="crearPartida()">Crear Nueva Sala</button>
-        <hr>
-        <p style="font-size: 0.8rem; margin-bottom: 0.5rem;">¿Tienes un código?</p>
-        <input type="text" id="codigoInput" placeholder="Ej: A4X1">
-        <button onclick="unirsePartida()" style="background-color: #3f3f46;">Unirse a Sala</button>
+        <div class="inicio-form">
+            <div class="input-group">
+                <label class="input-label">👤 Tu nombre</label>
+                <input type="text" id="nombreInput" placeholder="Escribe tu nombre aquí">
+            </div>
+            
+            <div class="personajes-section">
+                <p class="label-text">✨ Elige tu personaje:</p>
+                <div id="selector-personajes">
+                    <div class="personaje" data-icon="1" data-color="#bb44ff" onclick="seleccionarPersonaje('1')">
+                        <img src="assets/icon (1).png" alt="Personaje 1" class="personaje-avatar" style="border-color: #bb44ff;">
+                    </div>
+                    <div class="personaje" data-icon="2" data-color="#4444ff" onclick="seleccionarPersonaje('2')">
+                        <img src="assets/icon (2).png" alt="Personaje 2" class="personaje-avatar" style="border-color: #4444ff;">
+                    </div>
+                    <div class="personaje" data-icon="3" data-color="#44ff44" onclick="seleccionarPersonaje('3')">
+                        <img src="assets/icon (3).png" alt="Personaje 3" class="personaje-avatar" style="border-color: #44ff44;">
+                    </div>
+                    <div class="personaje" data-icon="4" data-color="#ff4444" onclick="seleccionarPersonaje('4')">
+                        <img src="assets/icon (4).png" alt="Personaje 4" class="personaje-avatar" style="border-color: #ff4444;">
+                    </div>
+                    <div class="personaje" data-icon="5" data-color="#ffff44" onclick="seleccionarPersonaje('5')">
+                        <img src="assets/icon (5).png" alt="Personaje 5" class="personaje-avatar" style="border-color: #ffff44;">
+                    </div>
+                    <div class="personaje" data-icon="6" data-color="#ff8844" onclick="seleccionarPersonaje('6')">
+                        <img src="assets/icon (6).png" alt="Personaje 6" class="personaje-avatar" style="border-color: #ff8844;">
+                    </div>
+                    <div class="personaje" data-icon="7" data-color="#ff44aa" onclick="seleccionarPersonaje('7')">
+                        <img src="assets/icon (7).png" alt="Personaje 7" class="personaje-avatar" style="border-color: #ff44aa;">
+                    </div>
+                    <div class="personaje" data-icon="8" data-color="#44ffff" onclick="seleccionarPersonaje('8')">
+                        <img src="assets/icon (8).png" alt="Personaje 8" class="personaje-avatar" style="border-color: #44ffff;">
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn-primary" onclick="crearPartida()">
+                <span class="btn-icon">🎮</span>
+                <span>Crear Nueva Sala</span>
+            </button>
+            
+            <div class="divider">
+                <span>o</span>
+            </div>
+            
+            <div class="unirse-section">
+                <p class="unirse-text">¿Tienes un código de sala?</p>
+                <div class="input-group">
+                    <input type="text" id="codigoInput" placeholder="Ej: A4X1" class="codigo-input">
+                </div>
+                <button class="btn-secondary" onclick="unirsePartida()">
+                    <span class="btn-icon">🚪</span>
+                    <span>Unirse a Sala</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <div id="sala-espera" style="display: none;">
@@ -67,30 +97,40 @@
 
     <!-- Pantalla de Juego -->
     <div id="pantalla-juego" style="display: none;">
-        <div class="game-header">
-            <div class="tu-personaje">
-                <img id="tuAvatar" src="" alt="Tu personaje" class="avatar-grande">
-                <h3 id="tuNombre"></h3>
-                <p id="tuRol" class="rol-badge"></p>
-            </div>
-            <div class="timer-container">
-                <div class="timer" id="timer">1:00</div>
-                <p class="timer-label" id="timerLabel">Turno de:</p>
-                <p class="jugador-actual" id="jugadorActual"></p>
+        <div class="game-table-container">
+            <!-- Jugadores alrededor de la mesa -->
+            <div class="mesa-jugadores" id="mesaJugadores"></div>
+            
+            <!-- Área central de la mesa -->
+            <div class="mesa-central">
+                <div class="info-turno">
+                    <div class="timer" id="timer">1:00</div>
+                    <p class="timer-label" id="timerLabel">Turno de:</p>
+                    <p class="jugador-actual" id="jugadorActual"></p>
+                </div>
+                
+                <!-- Tu información -->
+                <div class="tu-info-mesa">
+                    <img id="tuAvatar" src="" alt="Tu personaje" class="avatar-mesa">
+                    <div class="tu-datos">
+                        <h3 id="tuNombre"></h3>
+                        <p id="tuRol" class="rol-badge"></p>
+                    </div>
+                </div>
+                
+                <!-- Área de escritura -->
+                <div class="area-escritura-mesa">
+                    <textarea id="textoJugador" placeholder="Escribe tu mensaje..." maxlength="500" disabled></textarea>
+                    <button id="btnEnviarTexto" onclick="enviarTexto()" style="display: none;">Enviar</button>
+                </div>
             </div>
         </div>
-
-        <div class="area-escritura">
-            <textarea id="textoJugador" placeholder="Escribe aquí..." maxlength="500" disabled></textarea>
-            <button id="btnEnviarTexto" onclick="enviarTexto()" style="display: none;">Enviar</button>
-        </div>
-
-        <div class="historial-mensajes" id="historialMensajes">
-            <h4>Mensajes enviados:</h4>
+        
+        <!-- Historial de mensajes (fuera de la mesa) -->
+        <div class="historial-mensajes-lateral" id="historialMensajes">
+            <h4>💬 Mensajes</h4>
             <div id="listaMensajes"></div>
         </div>
-
-        <div class="lista-jugadores-juego" id="listaJugadoresJuego"></div>
     </div>
 
     <!-- Pantalla de Votación -->
@@ -102,6 +142,46 @@
         
         <div class="resultados-votacion" id="resultadosVotacion" style="display: none;">
             <button id="btnReiniciar" style="display: none;" onclick="reiniciarPartida()">🔄 Jugar de Nuevo</button>
+        </div>
+    </div>
+
+    <!-- Botón de Ayuda -->
+    <button id="btnAyuda" class="help-button" title="¿Cómo se juega?" onclick="mostrarAyuda()">
+        ❓
+    </button>
+
+    <!-- Modal de Ayuda -->
+    <div id="modalAyuda" class="modal" onclick="cerrarAyuda(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="cerrarAyuda()">&times;</span>
+            <h2>¿CÓMO JUGAR AL IMPOSTOR? 🕵️‍♂️</h2>
+            
+            <div class="ayuda-seccion">
+                <h3>1. El Secreto</h3>
+                <p>Al empezar, todos recibirán una <strong>Palabra Secreta</strong>, excepto uno: <strong>El Impostor</strong>. El Impostor no sabe cuál es la palabra, pero verá la categoría (ej. Animales).</p>
+            </div>
+            
+            <div class="ayuda-seccion">
+                <h3>2. La Fase de Juego</h3>
+                <p>Cada jugador debe escribir una sola palabra que esté relacionada con la secreta.</p>
+                <ul>
+                    <li><strong>Si conoces la palabra:</strong> No seas demasiado obvio o el Impostor la adivinará.</li>
+                    <li><strong>Si eres el Impostor:</strong> ¡Finge! Lee lo que ponen los demás e intenta poner algo que encaje para no ser descubierto.</li>
+                </ul>
+            </div>
+            
+            <div class="ayuda-seccion">
+                <h3>3. La Votación</h3>
+                <p>Después de que todos hayan participado, llega el debate. Discutid quién ha puesto la palabra más sospechosa y votad para expulsar al que creáis que es el Impostor.</p>
+            </div>
+            
+            <div class="ayuda-seccion">
+                <h3>4. ¿Quién gana?</h3>
+                <ul>
+                    <li><strong>Los Jugadores:</strong> Ganan si identifican al Impostor.</li>
+                    <li><strong>El Impostor:</strong> Gana si no es descubierto o si, al ser pillado, logra adivinar cuál era la Palabra Secreta.</li>
+                </ul>
+            </div>
         </div>
     </div>
 

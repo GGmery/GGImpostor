@@ -118,6 +118,8 @@ io.on('connection', (socket) => {
         const codigo = datos.codigo;
         if (!salas[codigo]) return;
         
+        console.log('Texto recibido de:', socket.id, 'Turno actual antes:', salas[codigo].turnoActual);
+        
         const jugador = salas[codigo].jugadores[socket.id];
         io.to(codigo).emit('textoRecibido', {
             jugadorId: socket.id,
@@ -133,12 +135,15 @@ io.on('connection', (socket) => {
         // Esperar un segundo para que se vea el mensaje y pasar al siguiente turno
         setTimeout(() => {
             salas[codigo].turnoActual++;
+            console.log('Turno actual después:', salas[codigo].turnoActual, 'Total turnos:', salas[codigo].ordenTurnos.length);
             
             if (salas[codigo].turnoActual >= salas[codigo].ordenTurnos.length) {
                 // Todos jugaron, iniciar votación
+                console.log('Todos jugaron, iniciando votación');
                 iniciarVotacion(codigo);
             } else {
                 // Siguiente turno
+                console.log('Siguiente turno');
                 iniciarSiguienteTurno(codigo);
             }
         }, 1000);
@@ -157,16 +162,26 @@ io.on('connection', (socket) => {
         
         if (!salas[codigo].votos) salas[codigo].votos = {};
         if (!salas[codigo].votantes) salas[codigo].votantes = new Set();
+        if (!salas[codigo].votoAnterior) salas[codigo].votoAnterior = {};
         
-        // Verificar que no haya votado ya
-        if (salas[codigo].votantes.has(socket.id)) return;
+        // Si ya había votado, restar el voto anterior
+        if (salas[codigo].votoAnterior[socket.id]) {
+            const votoAnteriorId = salas[codigo].votoAnterior[socket.id];
+            if (salas[codigo].votos[votoAnteriorId]) {
+                salas[codigo].votos[votoAnteriorId]--;
+                if (salas[codigo].votos[votoAnteriorId] === 0) {
+                    delete salas[codigo].votos[votoAnteriorId];
+                }
+            }
+        }
         
-        // Registrar voto
+        // Registrar nuevo voto
         if (!salas[codigo].votos[datos.votadoId]) {
             salas[codigo].votos[datos.votadoId] = 0;
         }
         salas[codigo].votos[datos.votadoId]++;
         salas[codigo].votantes.add(socket.id);
+        salas[codigo].votoAnterior[socket.id] = datos.votadoId;
         
         // Actualizar contador de votos para todos
         io.to(codigo).emit('actualizarVotos', salas[codigo].votos);
@@ -207,13 +222,21 @@ io.on('connection', (socket) => {
 // --- FUNCIONES AUXILIARES ---
 
 function iniciarSiguienteTurno(codigo) {
-    if (!salas[codigo]) return;
+    if (!salas[codigo]) {
+        console.log('ERROR: Sala no existe:', codigo);
+        return;
+    }
     
     const sala = salas[codigo];
     const jugadorId = sala.ordenTurnos[sala.turnoActual];
     const jugador = sala.jugadores[jugadorId];
     
-    if (!jugador) return;
+    console.log('Iniciando turno:', sala.turnoActual, 'JugadorID:', jugadorId, 'Existe jugador:', !!jugador);
+    
+    if (!jugador) {
+        console.log('ERROR: Jugador no encontrado. OrdenTurnos:', sala.ordenTurnos, 'Jugadores:', Object.keys(sala.jugadores));
+        return;
+    }
     
     // Notificar a todos de quién es el turno
     Object.keys(sala.jugadores).forEach(id => {
@@ -316,16 +339,38 @@ function procesarResultadoVotacion(codigo) {
             io.to(codigo).emit('cambiarMusica', { track: 'impostorPierde' });
             sala.estado = 'FINALIZADO';
         } else {
-            io.to(codigo).emit('cambiarMusica', { track: 'partida' });
-            
             // Eliminar jugador y continuar
             delete sala.jugadores[eliminadoId];
             sala.ordenTurnos = sala.ordenTurnos.filter(id => id !== eliminadoId);
             
-            setTimeout(() => {
-                sala.turnoActual = 0;
-                iniciarSiguienteTurno(codigo);
-            }, 6000);
+            // Verificar si el impostor ganó (solo quedan 2 jugadores: impostor + 1 civil)
+            const jugadoresRestantes = Object.values(sala.jugadores);
+            if (jugadoresRestantes.length <= 2) {
+                // El impostor ganó
+                io.to(codigo).emit('cambiarMusica', { track: 'impostorGana' });
+                
+                // Re-emitir el resultado indicando que el juego terminó
+                io.to(codigo).emit('resultadoVotacion', {
+                    empate: false,
+                    eliminado: {
+                        id: eliminado.id,
+                        nombre: eliminado.nombre,
+                        avatar: eliminado.avatar
+                    },
+                    impostorEliminado: false,
+                    juegoTerminado: true,
+                    impostorGano: true
+                });
+                
+                sala.estado = 'FINALIZADO';
+            } else {
+                io.to(codigo).emit('cambiarMusica', { track: 'partida' });
+                
+                setTimeout(() => {
+                    sala.turnoActual = 0;
+                    iniciarSiguienteTurno(codigo);
+                }, 6000);
+            }
         }
     }
 }

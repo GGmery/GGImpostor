@@ -186,6 +186,7 @@ let soyLider = false;
 
 socket.on('juegoIniciado', (datos) => {
     console.log('¡El juego ha comenzado!', datos);
+    console.log('Tu palabra:', datos.tuInfo.palabra);
     miDatosJuego = datos.tuInfo;
     
     // Ocultar sala de espera y mostrar pantalla de juego
@@ -206,7 +207,8 @@ socket.on('juegoIniciado', (datos) => {
         // Animación roja
         document.body.style.animation = 'flash-red 1s ease-in-out';
     } else {
-        rolBadge.innerHTML = `✅ CIVIL<br><small style="font-size: 0.8rem; font-weight: normal;">Tu palabra: <strong>${miDatosJuego.palabra}</strong></small>`;
+        const palabra = miDatosJuego.palabra || 'ERROR';
+        rolBadge.innerHTML = `✅ CIVIL<br><small style="font-size: 0.8rem; font-weight: normal;">Tu palabra: <strong>${palabra}</strong></small>`;
         rolBadge.className = 'rol-badge civil';
         // Animación verde
         document.body.style.animation = 'flash-green 1s ease-in-out';
@@ -222,6 +224,7 @@ socket.on('juegoIniciado', (datos) => {
 });
 
 socket.on('nuevoTurno', (datos) => {
+    console.log('🔄 Nuevo turno recibido:', datos);
     turnoActual = datos;
     
     // Actualizar UI del turno
@@ -246,6 +249,7 @@ socket.on('nuevoTurno', (datos) => {
     }
     
     // Iniciar timer
+    console.log('⏱️ Iniciando timer de 60 segundos');
     iniciarTimer(60, 'timer');
     
     // Marcar jugador activo
@@ -297,6 +301,13 @@ socket.on('resultadoVotacion', (datos) => {
 socket.on('errorVoto', (msg) => {
     alert(msg);
     miVoto = null; // Permitir votar de nuevo
+    
+    // Restaurar UI para permitir votar de nuevo
+    document.querySelectorAll('.opcion-voto').forEach(op => {
+        op.style.pointerEvents = 'auto';
+        op.style.opacity = '1';
+        op.classList.remove('votado');
+    });
 });
 
 socket.on('volverASala', (datos) => {
@@ -345,25 +356,37 @@ function actualizarListaUI(jugadores) {
 // --- FUNCIONES DEL JUEGO ---
 
 function actualizarListaJugadoresJuego(jugadores) {
-    const lista = document.getElementById('listaJugadoresJuego');
-    lista.innerHTML = jugadores.map(j => `
-        <div class="jugador-card" data-jugador-id="${j.id}">
-            <img src="assets/icon (${j.avatar}).png" alt="${j.nombre}">
-            <p>${j.nombre}</p>
-        </div>
-    `).join('');
+    const mesa = document.getElementById('mesaJugadores');
+    const totalJugadores = jugadores.length;
+    
+    mesa.innerHTML = jugadores.map((j, index) => {
+        // Calcular posición alrededor de la mesa (elipse)
+        const angulo = (index / totalJugadores) * 2 * Math.PI - Math.PI / 2;
+        const radiusX = 42; // Porcentaje del ancho
+        const radiusY = 38; // Porcentaje del alto
+        const x = 50 + radiusX * Math.cos(angulo);
+        const y = 50 + radiusY * Math.sin(angulo);
+        
+        return `
+            <div class="jugador-mesa" data-jugador-id="${j.id}" 
+                 style="left: ${x}%; top: ${y}%; transform: translate(-50%, -50%);">
+                <img src="assets/icon (${j.avatar}).png" alt="${j.nombre}" class="jugador-mesa-avatar">
+                <span class="jugador-mesa-nombre">${j.nombre}</span>
+            </div>
+        `;
+    }).join('');
 }
 
 function actualizarJugadorActivo(jugadorId) {
-    document.querySelectorAll('.jugador-card').forEach(card => {
+    document.querySelectorAll('.jugador-mesa').forEach(card => {
         card.classList.remove('activo');
     });
-    const cardActiva = document.querySelector(`[data-jugador-id="${jugadorId}"]`);
+    const cardActiva = document.querySelector(`.jugador-mesa[data-jugador-id="${jugadorId}"]`);
     if (cardActiva) cardActiva.classList.add('activo');
 }
 
 function marcarJugadorCompletado(jugadorId) {
-    const card = document.querySelector(`[data-jugador-id="${jugadorId}"]`);
+    const card = document.querySelector(`.jugador-mesa[data-jugador-id="${jugadorId}"]`);
     if (card) card.classList.add('completado');
 }
 
@@ -428,15 +451,31 @@ function mostrarOpcionesVoto(jugadores) {
 let miVoto = null;
 
 function votar(jugadorId) {
-    if (miVoto) return; // Ya votó
+    // No permitir votarse a sí mismo
+    if (jugadorId === socket.id) {
+        alert('No puedes votarte a ti mismo');
+        return;
+    }
+    
+    // Si ya votó por esta misma persona, no hacer nada
+    if (miVoto === jugadorId) return;
+    
+    // Si ya votó por otra persona, permitir cambiar el voto
+    if (miVoto) {
+        // Restaurar visualmente el voto anterior
+        document.querySelectorAll('.opcion-voto').forEach(op => {
+            op.classList.remove('votado');
+            op.style.opacity = '1';
+        });
+    }
     
     miVoto = jugadorId;
     const codigo = document.getElementById('mostrarCodigo').innerText;
     socket.emit('votar', { codigo, votadoId: jugadorId });
     
-    // Marcar visualmente
+    // Marcar visualmente el nuevo voto
     document.querySelectorAll('.opcion-voto').forEach(op => {
-        op.style.pointerEvents = 'none';
+        op.classList.remove('votado');
         op.style.opacity = '0.5';
     });
     
@@ -457,7 +496,10 @@ function actualizarContadorVotos(votos) {
 }
 
 function mostrarResultadoVotacion(datos) {
-    clearInterval(timerInterval);
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
     
     const resultadosDiv = document.getElementById('resultadosVotacion');
     resultadosDiv.style.display = 'block';
@@ -471,13 +513,32 @@ function mostrarResultadoVotacion(datos) {
         `;
     } else {
         const eliminado = datos.eliminado;
-        contenidoHTML = `
-            <h3>${eliminado.nombre} fue eliminado</h3>
-            <img src="assets/icon (${eliminado.avatar}).png" style="width: 100px; height: 100px; border-radius: 15px; margin: 15px 0;">
-            <p style="font-size: 1.2rem; font-weight: bold;">
-                ${datos.impostorEliminado ? '✅ ¡Era el IMPOSTOR! Los civiles ganan' : '❌ Era un CIVIL. El impostor sigue suelto'}
-            </p>
-        `;
+        
+        if (datos.impostorEliminado) {
+            contenidoHTML = `
+                <h3>${eliminado.nombre} fue eliminado</h3>
+                <img src="assets/icon (${eliminado.avatar}).png" style="width: 100px; height: 100px; border-radius: 15px; margin: 15px 0;">
+                <p style="font-size: 1.2rem; font-weight: bold;">
+                    ✅ ¡Era el IMPOSTOR! Los civiles ganan
+                </p>
+            `;
+        } else if (datos.impostorGano) {
+            contenidoHTML = `
+                <h3>${eliminado.nombre} fue eliminado</h3>
+                <img src="assets/icon (${eliminado.avatar}).png" style="width: 100px; height: 100px; border-radius: 15px; margin: 15px 0;">
+                <p style="font-size: 1.2rem; font-weight: bold;">
+                    🔪 ¡El IMPOSTOR GANÓ! Solo quedan 2 jugadores
+                </p>
+            `;
+        } else {
+            contenidoHTML = `
+                <h3>${eliminado.nombre} fue eliminado</h3>
+                <img src="assets/icon (${eliminado.avatar}).png" style="width: 100px; height: 100px; border-radius: 15px; margin: 15px 0;">
+                <p style="font-size: 1.2rem; font-weight: bold;">
+                    ❌ Era un CIVIL. El impostor sigue suelto
+                </p>
+            `;
+        }
     }
     
     resultadosDiv.innerHTML = contenidoHTML;
@@ -503,3 +564,22 @@ function reiniciarPartida() {
     const codigo = document.getElementById('mostrarCodigo').innerText;
     socket.emit('reiniciarPartida', { codigo });
 }
+
+// --- MODAL DE AYUDA ---
+function mostrarAyuda() {
+    document.getElementById('modalAyuda').style.display = 'block';
+}
+
+function cerrarAyuda(event) {
+    const modal = document.getElementById('modalAyuda');
+    if (!event || event.target === modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Cerrar modal con tecla Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        cerrarAyuda();
+    }
+});
