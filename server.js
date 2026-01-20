@@ -364,7 +364,7 @@ function procesarResultadoVotacion(codigo) {
             delete sala.jugadores[eliminadoId];
             sala.ordenTurnos = sala.ordenTurnos.filter(id => id !== eliminadoId);
             
-            // Verificar si el impostor ganó (solo quedan 2 jugadores: impostor + 1 civil)
+            // Verificar si el impostor ganó (solo quedan 2 jugadores o menos)
             const jugadoresRestantes = Object.values(sala.jugadores);
             if (jugadoresRestantes.length <= 2) {
                 // El impostor ganó
@@ -380,12 +380,22 @@ function procesarResultadoVotacion(codigo) {
                     },
                     impostorEliminado: false,
                     juegoTerminado: true,
-                    impostorGano: true
+                    impostorGano: true,
+                    mensajeExtra: '🔪 ¡El impostor ha ganado! Solo quedan 2 jugadores.'
                 });
                 
                 sala.estado = 'FINALIZADO';
             } else {
+                // Continuar jugando - mensaje diferente según cantidad de jugadores
                 io.to(codigo).emit('cambiarMusica', { track: 'partida' });
+                
+                // Mensaje gracioso cuando echan a un inocente
+                const mensajeInocente = '¿Pero y estas formas de juzgar? ¡Habéis echado a un inocente! Venga, otra ronda más, a ver si estáis más espabilados 🤦';
+                
+                // Re-emitir con mensaje adicional
+                setTimeout(() => {
+                    io.to(codigo).emit('mensajeInocente', { mensaje: mensajeInocente });
+                }, 2000);
                 
                 setTimeout(() => {
                     sala.turnoActual = 0;

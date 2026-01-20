@@ -298,6 +298,15 @@ socket.on('resultadoVotacion', (datos) => {
     mostrarResultadoVotacion(datos);
 });
 
+socket.on('mensajeInocente', (datos) => {
+    // Mostrar mensaje cuando echan a un inocente
+    const resultadosDiv = document.getElementById('resultadosVotacion');
+    const mensajeDiv = document.createElement('div');
+    mensajeDiv.style.cssText = 'margin-top: 15px; padding: 15px; background: rgba(255, 165, 0, 0.2); border: 2px solid orange; border-radius: 10px; font-size: 1rem; line-height: 1.5;';
+    mensajeDiv.textContent = datos.mensaje;
+    resultadosDiv.appendChild(mensajeDiv);
+});
+
 socket.on('errorVoto', (msg) => {
     alert(msg);
     miVoto = null; // Permitir votar de nuevo
