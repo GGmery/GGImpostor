@@ -3,12 +3,16 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 const fs = require('fs');
+const path = require('path');
 
 app.use(express.static('public'));
 
 // Cargar palabras
-const palabrasData = JSON.parse(fs.readFileSync('./palabras.json', 'utf8'));
+const palabrasPath = path.join(__dirname, 'palabras.json');
+const palabrasData = JSON.parse(fs.readFileSync(palabrasPath, 'utf8'));
 const palabras = palabrasData.palabras;
+
+console.log(`Palabras cargadas: ${palabras.length} palabras disponibles`);
 
 // AQUÍ SE GUARDAN LAS SALAS
 let salas = {};
