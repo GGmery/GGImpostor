@@ -35,7 +35,11 @@ io.on('connection', (socket) => {
     // ESCUCHA PARA UNIRSE
     socket.on('unirseASala', (datos) => {
         const codigo = datos.codigo;
+        console.log(`Intento de unirse a sala ${codigo}`);
+        console.log('Salas disponibles:', Object.keys(salas));
+        
         if (!salas[codigo]) {
+            console.log(`Sala ${codigo} no encontrada`);
             socket.emit('errorUnion', 'La sala no existe');
             return;
         }
@@ -53,6 +57,7 @@ io.on('connection', (socket) => {
             avatar: datos.avatar,
             esLider: false
         };
+        console.log(`${datos.nombre} se unió a la sala ${codigo}`);
         io.to(codigo).emit('actualizarListaJugadores', Object.values(salas[codigo].jugadores));
         socket.emit('unionExitosa', { codigo });
     });

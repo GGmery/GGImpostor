@@ -12,20 +12,37 @@ const musicTracks = {
 };
 
 let currentMusic = null;
-const audioPlayer = document.getElementById('gameMusic');
+let audioPlayer = null;
+let userInteracted = false;
 
 function playMusic(track) {
+    if (!audioPlayer) {
+        audioPlayer = document.getElementById('gameMusic');
+    }
+    
     if (currentMusic === track && !audioPlayer.paused) return; // Ya se está reproduciendo
     
     currentMusic = track;
     audioPlayer.src = musicTracks[track];
-    audioPlayer.play().catch(err => console.log('Error reproduciendo música:', err));
+    
+    // Intentar reproducir
+    const playPromise = audioPlayer.play();
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            userInteracted = true;
+            console.log('Reproduciendo:', track);
+        }).catch(err => {
+            console.log('Se necesita interacción del usuario para reproducir música');
+        });
+    }
 }
 
 function stopMusic() {
-    audioPlayer.pause();
-    audioPlayer.currentTime = 0;
-    currentMusic = null;
+    if (audioPlayer) {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
+        currentMusic = null;
+    }
 }
 
 // --- TEMA ---
@@ -52,6 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Seleccionar primer personaje por defecto
     seleccionarPersonaje('1');
     
+    // Inicializar el audioPlayer
+    audioPlayer = document.getElementById('gameMusic');
+    
     // Control de volumen
     const volumeSlider = document.getElementById('volumeSlider');
     const volumePercentage = document.querySelector('.volume-percentage');
@@ -70,8 +90,18 @@ document.addEventListener('DOMContentLoaded', () => {
         updateVolumeGradient(volume);
     });
     
-    // Iniciar música de inicio
-    playMusic('inicio');
+    // Iniciar música con la primera interacción del usuario
+    const startMusic = () => {
+        if (!userInteracted) {
+            playMusic('inicio');
+            // Remover listeners después de la primera interacción
+            document.removeEventListener('click', startMusic);
+            document.removeEventListener('keydown', startMusic);
+        }
+    };
+    
+    document.addEventListener('click', startMusic);
+    document.addEventListener('keydown', startMusic);
 });
 
 function updateVolumeGradient(value) {
@@ -117,6 +147,7 @@ function unirsePartida() {
     if (!nombre) return alert("Ponte un nombre primero");
     if (!codigo) return alert("Escribe el código de la sala de tu amigo");
     
+    console.log('Intentando unirse a sala:', codigo);
     socket.emit('unirseASala', { nombre, codigo, avatar: personajeSeleccionado });
 }
 
