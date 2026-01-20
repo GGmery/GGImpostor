@@ -365,6 +365,47 @@ hr {
     cursor: not-allowed;
 }
 
+.historial-mensajes {
+    background: var(--input-bg);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 2rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.historial-mensajes h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    opacity: 0.7;
+}
+
+#listaMensajes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mensaje-item {
+    background: var(--card-bg);
+    padding: 10px;
+    border-radius: 8px;
+    border-left: 3px solid var(--twitch-purple);
+}
+
+.mensaje-autor {
+    font-weight: bold;
+    color: var(--accent-color);
+    font-size: 0.85rem;
+    margin-bottom: 3px;
+}
+
+.mensaje-texto {
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
 .lista-jugadores-juego {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));

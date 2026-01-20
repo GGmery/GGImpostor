@@ -123,6 +123,24 @@ io.on('connection', (socket) => {
             nombre: jugador.nombre,
             texto: datos.texto
         });
+        
+        // Cancelar el timeout del turno actual y pasar inmediatamente al siguiente
+        if (salas[codigo].timeoutTurno) {
+            clearTimeout(salas[codigo].timeoutTurno);
+        }
+        
+        // Esperar un segundo para que se vea el mensaje y pasar al siguiente turno
+        setTimeout(() => {
+            salas[codigo].turnoActual++;
+            
+            if (salas[codigo].turnoActual >= salas[codigo].ordenTurnos.length) {
+                // Todos jugaron, iniciar votación
+                iniciarVotacion(codigo);
+            } else {
+                // Siguiente turno
+                iniciarSiguienteTurno(codigo);
+            }
+        }, 1000);
     });
 
     // VOTAR
@@ -168,7 +186,7 @@ function iniciarSiguienteTurno(codigo) {
     });
     
     // Después de 60 segundos, pasar al siguiente turno o iniciar votación
-    setTimeout(() => {
+    sala.timeoutTurno = setTimeout(() => {
         sala.turnoActual++;
         
         if (sala.turnoActual >= sala.ordenTurnos.length) {

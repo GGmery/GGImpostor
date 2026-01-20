@@ -191,6 +191,9 @@ socket.on('juegoIniciado', (datos) => {
     document.getElementById('sala-espera').style.display = 'none';
     document.getElementById('pantalla-juego').style.display = 'block';
     
+    // Limpiar historial de mensajes
+    document.getElementById('listaMensajes').innerHTML = '';
+    
     // Mostrar tu personaje y rol
     document.getElementById('tuAvatar').src = `assets/icon (${miDatosJuego.avatar}).png`;
     document.getElementById('tuNombre').textContent = miDatosJuego.nombre;
@@ -250,7 +253,21 @@ socket.on('nuevoTurno', (datos) => {
 
 socket.on('textoRecibido', (datos) => {
     console.log(`${datos.nombre} escribió: ${datos.texto}`);
-    // Aquí podrías mostrar el texto en algún lugar si quieres
+    
+    // Agregar mensaje al historial
+    const listaMensajes = document.getElementById('listaMensajes');
+    const mensajeDiv = document.createElement('div');
+    mensajeDiv.className = 'mensaje-item';
+    mensajeDiv.innerHTML = `
+        <div class="mensaje-autor">${datos.nombre}</div>
+        <div class="mensaje-texto">${datos.texto}</div>
+    `;
+    listaMensajes.appendChild(mensajeDiv);
+    
+    // Scroll automático al último mensaje
+    const historial = document.getElementById('historialMensajes');
+    historial.scrollTop = historial.scrollHeight;
+    
     marcarJugadorCompletado(datos.jugadorId);
 });
 
@@ -363,6 +380,12 @@ function enviarTexto() {
     
     document.getElementById('textoJugador').disabled = true;
     document.getElementById('btnEnviarTexto').style.display = 'none';
+    
+    // Detener el timer ya que se envió el mensaje
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
 }
 
 function mostrarOpcionesVoto(jugadores) {
