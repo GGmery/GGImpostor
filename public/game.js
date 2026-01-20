@@ -357,19 +357,10 @@ function actualizarListaUI(jugadores) {
 
 function actualizarListaJugadoresJuego(jugadores) {
     const mesa = document.getElementById('mesaJugadores');
-    const totalJugadores = jugadores.length;
     
-    mesa.innerHTML = jugadores.map((j, index) => {
-        // Calcular posición alrededor de la mesa (elipse)
-        const angulo = (index / totalJugadores) * 2 * Math.PI - Math.PI / 2;
-        const radiusX = 42; // Porcentaje del ancho
-        const radiusY = 38; // Porcentaje del alto
-        const x = 50 + radiusX * Math.cos(angulo);
-        const y = 50 + radiusY * Math.sin(angulo);
-        
+    mesa.innerHTML = jugadores.map((j) => {
         return `
-            <div class="jugador-mesa" data-jugador-id="${j.id}" 
-                 style="left: ${x}%; top: ${y}%; transform: translate(-50%, -50%);">
+            <div class="jugador-mesa" data-jugador-id="${j.id}">
                 <img src="assets/icon (${j.avatar}).png" alt="${j.nombre}" class="jugador-mesa-avatar">
                 <span class="jugador-mesa-nombre">${j.nombre}</span>
             </div>
