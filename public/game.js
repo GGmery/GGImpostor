@@ -441,4 +441,3 @@ function mostrarResultadoVotacion(datos) {
         }
     }, 5000);
 }
-}
