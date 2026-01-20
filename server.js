@@ -2,8 +2,12 @@ const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
+const fs = require('fs');
 
 app.use(express.static('public'));
+
+// Cargar palabras
+const palabras = JSON.parse(fs.readFileSync('./palabras.json', 'utf8'));
 
 // AQUÍ SE GUARDAN LAS SALAS
 let salas = {};
@@ -73,6 +77,9 @@ io.on('connection', (socket) => {
         const jugadores = Object.values(salas[codigo].jugadores);
         const impostorIndex = Math.floor(Math.random() * jugadores.length);
         
+        // Seleccionar palabra aleatoria
+        const palabraSecreta = palabras[Math.floor(Math.random() * palabras.length)];
+        
         // Desordenar el orden de turnos
         const ordenTurnos = [...jugadores].sort(() => Math.random() - 0.5);
         salas[codigo].ordenTurnos = ordenTurnos.map(j => j.id);
@@ -88,7 +95,8 @@ io.on('connection', (socket) => {
                 tuInfo: {
                     nombre: jugador.nombre,
                     avatar: jugador.avatar,
-                    esImpostor
+                    esImpostor,
+                    palabra: esImpostor ? null : palabraSecreta
                 },
                 todosJugadores: jugadores.map(j => ({
                     id: j.id,

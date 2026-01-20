@@ -197,12 +197,21 @@ socket.on('juegoIniciado', (datos) => {
     
     const rolBadge = document.getElementById('tuRol');
     if (miDatosJuego.esImpostor) {
-        rolBadge.textContent = '🔪 IMPOSTOR';
+        rolBadge.innerHTML = '🔪 IMPOSTOR<br><small style="font-size: 0.8rem; font-weight: normal;">Vaya, haz todo lo posible por no ser pillado</small>';
         rolBadge.className = 'rol-badge impostor';
+        // Animación roja
+        document.body.style.animation = 'flash-red 1s ease-in-out';
     } else {
-        rolBadge.textContent = '✅ CIVIL';
+        rolBadge.innerHTML = `✅ CIVIL<br><small style="font-size: 0.8rem; font-weight: normal;">Tu palabra: <strong>${miDatosJuego.palabra}</strong></small>`;
         rolBadge.className = 'rol-badge civil';
+        // Animación verde
+        document.body.style.animation = 'flash-green 1s ease-in-out';
     }
+    
+    // Remover animación después de 1 segundo
+    setTimeout(() => {
+        document.body.style.animation = '';
+    }, 1000);
     
     // Mostrar lista de jugadores
     actualizarListaJugadoresJuego(datos.todosJugadores);
@@ -280,7 +289,7 @@ function actualizarListaUI(jugadores) {
     const lista = document.getElementById('lista-jugadores');
     lista.innerHTML = jugadores.map(j => `
         <p>
-            <img src="assets/icon (${j.avatar}).png" style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; vertical-align: middle; margin-right: 8px; object-fit: cover;" alt="Avatar">
+            <img src="assets/icon (${j.avatar}).png" style="display: inline-block; width: 30px; height: 30px; border-radius: 8px; vertical-align: middle; margin-right: 8px; object-fit: cover;" alt="Avatar">
             <b>${j.nombre}</b> ${j.esLider ? '<span style="color: var(--twitch-purple)">(Líder)</span>' : ''}
         </p>
     `).join('');

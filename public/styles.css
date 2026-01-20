@@ -37,6 +37,18 @@ body {
                 color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+@keyframes flash-green {
+    0% { background-color: var(--bg-color); }
+    50% { background-color: rgba(68, 255, 68, 0.2); }
+    100% { background-color: var(--bg-color); }
+}
+
+@keyframes flash-red {
+    0% { background-color: var(--bg-color); }
+    50% { background-color: rgba(255, 68, 68, 0.2); }
+    100% { background-color: var(--bg-color); }
+}
+
 #menu-inicio, #sala-espera {
     background: var(--card-bg);
     padding: 2rem;
@@ -269,6 +281,12 @@ hr {
     font-weight: bold;
     font-size: 1.1rem;
     margin-top: 10px;
+    line-height: 1.5;
+}
+
+.rol-badge small {
+    display: block;
+    margin-top: 5px;
 }
 
 .rol-badge.impostor {
