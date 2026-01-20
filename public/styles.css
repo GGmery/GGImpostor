@@ -492,12 +492,12 @@ hr {
     position: relative;
     background: var(--card-bg);
     border-radius: 20px;
-    padding: 40px;
+    padding: 20px;
     box-shadow: 0 10px 40px var(--shadow-color);
     border: 2px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 15px;
 }
 
 /* Jugadores en la parte superior */
@@ -505,10 +505,10 @@ hr {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    gap: 15px;
-    padding: 20px;
+    gap: 12px;
+    padding: 12px;
     background: rgba(145, 71, 255, 0.05);
-    border-radius: 15px;
+    border-radius: 12px;
     border: 1px solid rgba(145, 71, 255, 0.2);
 }
 
@@ -516,16 +516,16 @@ hr {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 10px;
+    gap: 6px;
+    padding: 8px;
     background: var(--input-bg);
-    border-radius: 12px;
+    border-radius: 10px;
     transition: all 0.3s ease;
 }
 
 .jugador-mesa-avatar {
-    width: 70px;
-    height: 70px;
+    width: 55px;
+    height: 55px;
     border-radius: 50%;
     border: 3px solid var(--border-color);
     object-fit: cover;
@@ -541,7 +541,7 @@ hr {
 
 .jugador-mesa.activo .jugador-mesa-avatar {
     border-color: var(--accent-color);
-    box-shadow: 0 0 20px rgba(0, 255, 136, 0.6),
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.6),
                 0 4px 12px rgba(0, 0, 0, 0.3);
     transform: scale(1.05);
 }
@@ -556,9 +556,9 @@ hr {
 
 .jugador-mesa-nombre {
     background: rgba(0, 0, 0, 0.5);
-    padding: 5px 12px;
-    border-radius: 8px;
-    font-size: 0.85rem;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.8rem;
     font-weight: bold;
     color: var(--text-color);
     white-space: nowrap;
@@ -574,8 +574,8 @@ hr {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 25px;
+    gap: 15px;
+    padding: 20px;
     background: var(--input-bg);
     border-radius: 15px;
     border: 2px solid var(--border-color);
@@ -584,13 +584,13 @@ hr {
 /* Información de turno */
 .info-turno {
     text-align: center;
-    padding: 15px;
+    padding: 12px;
     background: linear-gradient(135deg, rgba(145, 71, 255, 0.1) 0%, rgba(119, 44, 232, 0.1) 100%);
-    border-radius: 12px;
+    border-radius: 10px;
 }
 
 .timer {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: bold;
     color: var(--twitch-purple);
     font-family: 'Courier New', monospace;
@@ -607,17 +607,17 @@ hr {
 }
 
 .timer-label {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-color);
     opacity: 0.7;
-    margin: 5px 0 0 0;
+    margin: 3px 0 0 0;
 }
 
 .jugador-actual {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: bold;
     color: var(--accent-color);
-    margin: 5px 0 0 0;
+    margin: 3px 0 0 0;
 }
 
 /* Tu información */
@@ -625,18 +625,19 @@ hr {
     display: flex;
     align-items: center;
     gap: 15px;
-    padding: 15px;
+    padding: 12px 15px;
     background: rgba(145, 71, 255, 0.1);
     border-radius: 12px;
     border: 2px solid var(--twitch-purple);
 }
 
 .avatar-mesa {
-    width: 60px;
-    height: 60px;
+    width: 55px;
+    height: 55px;
     border-radius: 12px;
     border: 3px solid var(--twitch-purple);
     object-fit: cover;
+    flex-shrink: 0;
 }
 
 .tu-datos {
@@ -644,25 +645,25 @@ hr {
 }
 
 .tu-datos h3 {
-    margin: 0 0 5px 0;
-    font-size: 1.2rem;
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
     color: var(--text-color);
 }
 
 .rol-badge {
     display: inline-block;
-    padding: 6px 14px;
-    border-radius: 12px;
+    padding: 5px 12px;
+    border-radius: 10px;
     font-weight: bold;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 .rol-badge small {
     display: block;
-    margin-top: 3px;
-    font-size: 0.75rem;
+    margin-top: 2px;
+    font-size: 0.7rem;
 }
 
 .rol-badge.impostor {
@@ -686,13 +687,13 @@ hr {
 
 .area-escritura-mesa textarea {
     flex: 1;
-    min-height: 80px;
+    min-height: 70px;
     padding: 12px;
     border-radius: 8px;
     border: 2px solid var(--input-border);
     background: var(--card-bg);
     color: var(--text-color);
-    font-size: 1rem;
+    font-size: 0.95rem;
     resize: none;
     font-family: inherit;
 }
@@ -700,6 +701,7 @@ hr {
 .area-escritura-mesa textarea:focus {
     border-color: var(--twitch-purple);
     outline: none;
+    box-shadow: 0 0 0 3px rgba(145, 71, 255, 0.1);
 }
 
 .area-escritura-mesa textarea:disabled {
@@ -708,11 +710,11 @@ hr {
 }
 
 .area-escritura-mesa button {
-    width: 120px;
-    padding: 12px 20px;
+    width: 100px;
+    padding: 12px 16px;
     margin: 0;
     align-self: stretch;
-    font-size: 1rem;
+    font-size: 0.95rem;
 }
 
 /* Historial lateral */
