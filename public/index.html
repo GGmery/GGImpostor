@@ -65,6 +65,39 @@
         <p id="esperandoTexto" style="font-size: 0.8rem; color: #71717a;">Esperando a que el líder empiece...</p>
     </div>
 
+    <!-- Pantalla de Juego -->
+    <div id="pantalla-juego" style="display: none;">
+        <div class="game-header">
+            <div class="tu-personaje">
+                <img id="tuAvatar" src="" alt="Tu personaje" class="avatar-grande">
+                <h3 id="tuNombre"></h3>
+                <p id="tuRol" class="rol-badge"></p>
+            </div>
+            <div class="timer-container">
+                <div class="timer" id="timer">1:00</div>
+                <p class="timer-label" id="timerLabel">Turno de:</p>
+                <p class="jugador-actual" id="jugadorActual"></p>
+            </div>
+        </div>
+
+        <div class="area-escritura">
+            <textarea id="textoJugador" placeholder="Escribe aquí..." maxlength="500" disabled></textarea>
+            <button id="btnEnviarTexto" onclick="enviarTexto()" style="display: none;">Enviar</button>
+        </div>
+
+        <div class="lista-jugadores-juego" id="listaJugadoresJuego"></div>
+    </div>
+
+    <!-- Pantalla de Votación -->
+    <div id="pantalla-votacion" style="display: none;">
+        <h2>¿Quién es el Impostor?</h2>
+        <div class="timer-votacion" id="timerVotacion">1:00</div>
+        
+        <div class="opciones-voto" id="opcionesVoto"></div>
+        
+        <div class="resultados-votacion" id="resultadosVotacion" style="display: none;"></div>
+    </div>
+
     <!-- Control de Volumen -->
     <div class="volume-control">
         <span class="volume-icon">🔊</span>

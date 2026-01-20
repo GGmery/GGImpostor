@@ -178,14 +178,93 @@ socket.on('cambiarMusica', (datos) => {
     playMusic(datos.track);
 });
 
-socket.on('juegoIniciado', () => {
-    console.log('¡El juego ha comenzado!');
-    // Aquí puedes añadir lógica adicional cuando inicie el juego
+// --- EVENTOS DEL JUEGO ---
+let miDatosJuego = null;
+let turnoActual = null;
+let timerInterval = null;
+
+socket.on('juegoIniciado', (datos) => {
+    console.log('¡El juego ha comenzado!', datos);
+    miDatosJuego = datos.tuInfo;
+    
+    // Ocultar sala de espera y mostrar pantalla de juego
+    document.getElementById('sala-espera').style.display = 'none';
+    document.getElementById('pantalla-juego').style.display = 'block';
+    
+    // Mostrar tu personaje y rol
+    document.getElementById('tuAvatar').src = `assets/icon (${miDatosJuego.avatar}).png`;
+    document.getElementById('tuNombre').textContent = miDatosJuego.nombre;
+    
+    const rolBadge = document.getElementById('tuRol');
+    if (miDatosJuego.esImpostor) {
+        rolBadge.textContent = '🔪 IMPOSTOR';
+        rolBadge.className = 'rol-badge impostor';
+    } else {
+        rolBadge.textContent = '✅ CIVIL';
+        rolBadge.className = 'rol-badge civil';
+    }
+    
+    // Mostrar lista de jugadores
+    actualizarListaJugadoresJuego(datos.todosJugadores);
 });
 
-socket.on('faseVotacion', () => {
+socket.on('nuevoTurno', (datos) => {
+    turnoActual = datos;
+    
+    // Actualizar UI del turno
+    document.getElementById('jugadorActual').textContent = datos.nombreJugador;
+    document.getElementById('timerLabel').textContent = datos.esMiTurno ? 'Tu turno:' : 'Turno de:';
+    
+    // Habilitar/deshabilitar textarea
+    const textarea = document.getElementById('textoJugador');
+    const btnEnviar = document.getElementById('btnEnviarTexto');
+    
+    if (datos.esMiTurno) {
+        textarea.disabled = false;
+        textarea.value = '';
+        textarea.placeholder = 'Escribe tu mensaje aquí...';
+        btnEnviar.style.display = 'block';
+        textarea.focus();
+    } else {
+        textarea.disabled = true;
+        textarea.value = '';
+        textarea.placeholder = `Esperando a ${datos.nombreJugador}...`;
+        btnEnviar.style.display = 'none';
+    }
+    
+    // Iniciar timer
+    iniciarTimer(60, 'timer');
+    
+    // Marcar jugador activo
+    actualizarJugadorActivo(datos.jugadorId);
+});
+
+socket.on('textoRecibido', (datos) => {
+    console.log(`${datos.nombre} escribió: ${datos.texto}`);
+    // Aquí podrías mostrar el texto en algún lugar si quieres
+    marcarJugadorCompletado(datos.jugadorId);
+});
+
+socket.on('faseVotacion', (datos) => {
     console.log('Fase de votación iniciada');
-    // Aquí puedes añadir lógica para mostrar la interfaz de votación
+    
+    // Ocultar pantalla de juego y mostrar votación
+    document.getElementById('pantalla-juego').style.display = 'none';
+    document.getElementById('pantalla-votacion').style.display = 'block';
+    
+    // Mostrar opciones de voto
+    mostrarOpcionesVoto(datos.jugadores);
+    
+    // Iniciar timer de votación
+    iniciarTimer(60, 'timerVotacion');
+});
+
+socket.on('actualizarVotos', (votos) => {
+    actualizarContadorVotos(votos);
+});
+
+socket.on('resultadoVotacion', (datos) => {
+    mostrarResultadoVotacion(datos);
 });
 
 // --- UTILIDADES ---
@@ -209,4 +288,148 @@ function actualizarListaUI(jugadores) {
     const soyLider = jugadores.find(j => j.id === socket.id && j.esLider);
     document.getElementById('btnIniciar').style.display = soyLider ? 'block' : 'none';
     document.getElementById('esperandoTexto').style.display = soyLider ? 'none' : 'block';
+}
+
+// --- FUNCIONES DEL JUEGO ---
+
+function actualizarListaJugadoresJuego(jugadores) {
+    const lista = document.getElementById('listaJugadoresJuego');
+    lista.innerHTML = jugadores.map(j => `
+        <div class="jugador-card" data-jugador-id="${j.id}">
+            <img src="assets/icon (${j.avatar}).png" alt="${j.nombre}">
+            <p>${j.nombre}</p>
+        </div>
+    `).join('');
+}
+
+function actualizarJugadorActivo(jugadorId) {
+    document.querySelectorAll('.jugador-card').forEach(card => {
+        card.classList.remove('activo');
+    });
+    const cardActiva = document.querySelector(`[data-jugador-id="${jugadorId}"]`);
+    if (cardActiva) cardActiva.classList.add('activo');
+}
+
+function marcarJugadorCompletado(jugadorId) {
+    const card = document.querySelector(`[data-jugador-id="${jugadorId}"]`);
+    if (card) card.classList.add('completado');
+}
+
+function iniciarTimer(segundos, elementId) {
+    if (timerInterval) clearInterval(timerInterval);
+    
+    let tiempoRestante = segundos;
+    const timerElement = document.getElementById(elementId);
+    
+    const actualizarDisplay = () => {
+        const minutos = Math.floor(tiempoRestante / 60);
+        const segs = tiempoRestante % 60;
+        timerElement.textContent = `${minutos}:${segs.toString().padStart(2, '0')}`;
+        
+        if (tiempoRestante <= 10) {
+            timerElement.classList.add('urgente');
+        } else {
+            timerElement.classList.remove('urgente');
+        }
+    };
+    
+    actualizarDisplay();
+    
+    timerInterval = setInterval(() => {
+        tiempoRestante--;
+        actualizarDisplay();
+        
+        if (tiempoRestante <= 0) {
+            clearInterval(timerInterval);
+        }
+    }, 1000);
+}
+
+function enviarTexto() {
+    const texto = document.getElementById('textoJugador').value.trim();
+    if (!texto) return alert('Escribe algo primero');
+    
+    const codigo = document.getElementById('mostrarCodigo').innerText;
+    socket.emit('enviarTexto', { codigo, texto });
+    
+    document.getElementById('textoJugador').disabled = true;
+    document.getElementById('btnEnviarTexto').style.display = 'none';
+}
+
+function mostrarOpcionesVoto(jugadores) {
+    const container = document.getElementById('opcionesVoto');
+    container.innerHTML = jugadores.map(j => `
+        <div class="opcion-voto" onclick="votar('${j.id}')">
+            <img src="assets/icon (${j.avatar}).png" alt="${j.nombre}">
+            <p>${j.nombre}</p>
+            <p class="votos-count" data-jugador-id="${j.id}">0 votos</p>
+        </div>
+    `).join('');
+}
+
+let miVoto = null;
+
+function votar(jugadorId) {
+    if (miVoto) return; // Ya votó
+    
+    miVoto = jugadorId;
+    const codigo = document.getElementById('mostrarCodigo').innerText;
+    socket.emit('votar', { codigo, votadoId: jugadorId });
+    
+    // Marcar visualmente
+    document.querySelectorAll('.opcion-voto').forEach(op => {
+        op.style.pointerEvents = 'none';
+        op.style.opacity = '0.5';
+    });
+    
+    const opcionVotada = document.querySelector(`.opcion-voto[onclick="votar('${jugadorId}')"]`);
+    if (opcionVotada) {
+        opcionVotada.classList.add('votado');
+        opcionVotada.style.opacity = '1';
+    }
+}
+
+function actualizarContadorVotos(votos) {
+    Object.keys(votos).forEach(jugadorId => {
+        const counter = document.querySelector(`[data-jugador-id="${jugadorId}"]`);
+        if (counter) {
+            counter.textContent = `${votos[jugadorId]} voto${votos[jugadorId] !== 1 ? 's' : ''}`;
+        }
+    });
+}
+
+function mostrarResultadoVotacion(datos) {
+    clearInterval(timerInterval);
+    
+    const resultadosDiv = document.getElementById('resultadosVotacion');
+    resultadosDiv.style.display = 'block';
+    
+    if (datos.empate) {
+        resultadosDiv.innerHTML = `
+            <h3>¡EMPATE!</h3>
+            <p>Nadie fue eliminado. El juego continúa...</p>
+        `;
+    } else {
+        const eliminado = datos.eliminado;
+        resultadosDiv.innerHTML = `
+            <h3>${eliminado.nombre} fue eliminado</h3>
+            <img src="assets/icon (${eliminado.avatar}).png" style="width: 100px; height: 100px; border-radius: 15px; margin: 15px 0;">
+            <p style="font-size: 1.2rem; font-weight: bold;">
+                ${datos.impostorEliminado ? '✅ ¡Era el IMPOSTOR! Los civiles ganan' : '❌ Era un CIVIL. El impostor sigue suelto'}
+            </p>
+        `;
+    }
+    
+    // Volver al juego o mostrar pantalla final después de 5 segundos
+    setTimeout(() => {
+        if (datos.juegoTerminado) {
+            // Aquí podrías mostrar una pantalla final
+        } else {
+            // Volver a la fase de juego
+            miVoto = null;
+            document.getElementById('pantalla-votacion').style.display = 'none';
+            document.getElementById('pantalla-juego').style.display = 'block';
+        }
+    }, 5000);
+}
 }

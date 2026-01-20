@@ -68,58 +68,201 @@ io.on('connection', (socket) => {
         if (!salas[codigo]) return;
         
         salas[codigo].estado = 'JUGANDO';
-        io.to(codigo).emit('juegoIniciado');
+        
+        // Asignar impostor aleatoriamente
+        const jugadores = Object.values(salas[codigo].jugadores);
+        const impostorIndex = Math.floor(Math.random() * jugadores.length);
+        
+        // Desordenar el orden de turnos
+        const ordenTurnos = [...jugadores].sort(() => Math.random() - 0.5);
+        salas[codigo].ordenTurnos = ordenTurnos.map(j => j.id);
+        salas[codigo].turnoActual = 0;
+        salas[codigo].votos = {};
+        
+        // Enviar a cada jugador su información personal
+        jugadores.forEach((jugador, index) => {
+            const esImpostor = index === impostorIndex;
+            jugador.esImpostor = esImpostor;
+            
+            io.to(jugador.id).emit('juegoIniciado', {
+                tuInfo: {
+                    nombre: jugador.nombre,
+                    avatar: jugador.avatar,
+                    esImpostor
+                },
+                todosJugadores: jugadores.map(j => ({
+                    id: j.id,
+                    nombre: j.nombre,
+                    avatar: j.avatar
+                }))
+            });
+        });
+        
         io.to(codigo).emit('cambiarMusica', { track: 'partida' });
+        
+        // Iniciar primer turno
+        setTimeout(() => iniciarSiguienteTurno(codigo), 2000);
     });
 
-    // FASE DE VOTACIÓN
-    socket.on('iniciarVotacion', (datos) => {
+    // ENVIAR TEXTO
+    socket.on('enviarTexto', (datos) => {
         const codigo = datos.codigo;
         if (!salas[codigo]) return;
         
-        salas[codigo].estado = 'VOTANDO';
-        io.to(codigo).emit('faseVotacion');
-        io.to(codigo).emit('cambiarMusica', { track: 'votando' });
+        const jugador = salas[codigo].jugadores[socket.id];
+        io.to(codigo).emit('textoRecibido', {
+            jugadorId: socket.id,
+            nombre: jugador.nombre,
+            texto: datos.texto
+        });
     });
 
-    // RESULTADO DE VOTACIÓN
-    socket.on('resultadoVotacion', (datos) => {
+    // VOTAR
+    socket.on('votar', (datos) => {
         const codigo = datos.codigo;
         if (!salas[codigo]) return;
         
-        if (datos.impostorEliminado) {
-            // Si eliminaron al impostor, inocentes ganan
-            salas[codigo].estado = 'FINALIZADO';
-            io.to(codigo).emit('cambiarMusica', { track: 'impostorPierde' });
-        } else {
-            // Continuar jugando
-            salas[codigo].estado = 'JUGANDO';
-            io.to(codigo).emit('cambiarMusica', { track: 'partida' });
+        if (!salas[codigo].votos) salas[codigo].votos = {};
+        
+        // Registrar voto
+        if (!salas[codigo].votos[datos.votadoId]) {
+            salas[codigo].votos[datos.votadoId] = 0;
         }
-    });
-
-    // IMPOSTOR GANA
-    socket.on('impostorGana', (datos) => {
-        const codigo = datos.codigo;
-        if (!salas[codigo]) return;
+        salas[codigo].votos[datos.votadoId]++;
         
-        salas[codigo].estado = 'FINALIZADO';
-        io.to(codigo).emit('cambiarMusica', { track: 'impostorGana' });
-    });
-
-    // IMPOSTOR PIERDE
-    socket.on('impostorPierde', (datos) => {
-        const codigo = datos.codigo;
-        if (!salas[codigo]) return;
-        
-        salas[codigo].estado = 'FINALIZADO';
-        io.to(codigo).emit('cambiarMusica', { track: 'impostorPierde' });
+        // Actualizar contador de votos para todos
+        io.to(codigo).emit('actualizarVotos', salas[codigo].votos);
     });
 
     socket.on('disconnect', () => {
         console.log('Usuario desconectado');
     });
 });
+
+// --- FUNCIONES AUXILIARES ---
+
+function iniciarSiguienteTurno(codigo) {
+    if (!salas[codigo]) return;
+    
+    const sala = salas[codigo];
+    const jugadorId = sala.ordenTurnos[sala.turnoActual];
+    const jugador = sala.jugadores[jugadorId];
+    
+    if (!jugador) return;
+    
+    // Notificar a todos de quién es el turno
+    Object.keys(sala.jugadores).forEach(id => {
+        io.to(id).emit('nuevoTurno', {
+            jugadorId,
+            nombreJugador: jugador.nombre,
+            esMiTurno: id === jugadorId
+        });
+    });
+    
+    // Después de 60 segundos, pasar al siguiente turno o iniciar votación
+    setTimeout(() => {
+        sala.turnoActual++;
+        
+        if (sala.turnoActual >= sala.ordenTurnos.length) {
+            // Todos jugaron, iniciar votación
+            iniciarVotacion(codigo);
+        } else {
+            // Siguiente turno
+            iniciarSiguienteTurno(codigo);
+        }
+    }, 60000); // 60 segundos
+}
+
+function iniciarVotacion(codigo) {
+    if (!salas[codigo]) return;
+    
+    const sala = salas[codigo];
+    sala.estado = 'VOTANDO';
+    sala.votos = {};
+    
+    const jugadores = Object.values(sala.jugadores).map(j => ({
+        id: j.id,
+        nombre: j.nombre,
+        avatar: j.avatar
+    }));
+    
+    io.to(codigo).emit('faseVotacion', { jugadores });
+    io.to(codigo).emit('cambiarMusica', { track: 'votando' });
+    
+    // Después de 60 segundos, contar votos
+    setTimeout(() => {
+        procesarResultadoVotacion(codigo);
+    }, 60000);
+}
+
+function procesarResultadoVotacion(codigo) {
+    if (!salas[codigo]) return;
+    
+    const sala = salas[codigo];
+    const votos = sala.votos || {};
+    
+    // Encontrar al más votado
+    let maxVotos = 0;
+    let eliminadoId = null;
+    let empate = false;
+    
+    Object.keys(votos).forEach(jugadorId => {
+        if (votos[jugadorId] > maxVotos) {
+            maxVotos = votos[jugadorId];
+            eliminadoId = jugadorId;
+            empate = false;
+        } else if (votos[jugadorId] === maxVotos && maxVotos > 0) {
+            empate = true;
+        }
+    });
+    
+    if (empate || !eliminadoId) {
+        // Empate, nadie es eliminado
+        io.to(codigo).emit('resultadoVotacion', {
+            empate: true,
+            juegoTerminado: false
+        });
+        
+        io.to(codigo).emit('cambiarMusica', { track: 'partida' });
+        
+        // Reiniciar turnos
+        setTimeout(() => {
+            sala.turnoActual = 0;
+            iniciarSiguienteTurno(codigo);
+        }, 6000);
+    } else {
+        // Alguien fue eliminado
+        const eliminado = sala.jugadores[eliminadoId];
+        const impostorEliminado = eliminado.esImpostor;
+        
+        io.to(codigo).emit('resultadoVotacion', {
+            empate: false,
+            eliminado: {
+                id: eliminado.id,
+                nombre: eliminado.nombre,
+                avatar: eliminado.avatar
+            },
+            impostorEliminado,
+            juegoTerminado: impostorEliminado
+        });
+        
+        if (impostorEliminado) {
+            io.to(codigo).emit('cambiarMusica', { track: 'impostorPierde' });
+            sala.estado = 'FINALIZADO';
+        } else {
+            io.to(codigo).emit('cambiarMusica', { track: 'partida' });
+            
+            // Eliminar jugador y continuar
+            delete sala.jugadores[eliminadoId];
+            sala.ordenTurnos = sala.ordenTurnos.filter(id => id !== eliminadoId);
+            
+            setTimeout(() => {
+                sala.turnoActual = 0;
+                iniciarSiguienteTurno(codigo);
+            }, 6000);
+        }
+    }
+}
 
 const PORT = process.env.PORT || 3000;
 http.listen(PORT, () => {
