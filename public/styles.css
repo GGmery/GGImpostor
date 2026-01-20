@@ -680,20 +680,20 @@ hr {
 /* Área de escritura */
 .area-escritura-mesa {
     display: flex;
-    flex-direction: column;
     gap: 10px;
+    align-items: stretch;
 }
 
 .area-escritura-mesa textarea {
-    width: 100%;
-    min-height: 100px;
+    flex: 1;
+    min-height: 80px;
     padding: 12px;
     border-radius: 8px;
     border: 2px solid var(--input-border);
     background: var(--card-bg);
     color: var(--text-color);
     font-size: 1rem;
-    resize: vertical;
+    resize: none;
     font-family: inherit;
 }
 
@@ -708,10 +708,11 @@ hr {
 }
 
 .area-escritura-mesa button {
-    align-self: flex-end;
-    width: auto;
-    padding: 10px 30px;
+    width: 120px;
+    padding: 12px 20px;
     margin: 0;
+    align-self: stretch;
+    font-size: 1rem;
 }
 
 /* Historial lateral */
