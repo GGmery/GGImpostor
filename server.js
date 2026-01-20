@@ -8,11 +8,28 @@ const path = require('path');
 app.use(express.static('public'));
 
 // Cargar palabras
-const palabrasPath = path.join(__dirname, 'palabras.json');
-const palabrasData = JSON.parse(fs.readFileSync(palabrasPath, 'utf8'));
-const palabras = palabrasData.palabras;
-
-console.log(`Palabras cargadas: ${palabras.length} palabras disponibles`);
+try {
+    const palabrasPath = path.join(__dirname, 'palabras.json');
+    console.log('Intentando cargar palabras desde:', palabrasPath);
+    console.log('¿Archivo existe?', fs.existsSync(palabrasPath));
+    
+    const palabrasData = JSON.parse(fs.readFileSync(palabrasPath, 'utf8'));
+    console.log('Datos del archivo:', palabrasData);
+    
+    var palabras = palabrasData.palabras;
+    
+    if (!palabras || !Array.isArray(palabras)) {
+        throw new Error('El formato de palabras.json es incorrecto');
+    }
+    
+    console.log(`✅ Palabras cargadas: ${palabras.length} palabras disponibles`);
+} catch (error) {
+    console.error('❌ Error al cargar palabras:', error.message);
+    console.error('Stack:', error.stack);
+    // Usar palabras por defecto como fallback
+    var palabras = ['Streamer', 'Chat', 'Twitch', 'YouTube', 'Video', 'Gaming'];
+    console.log('⚠️ Usando palabras por defecto');
+}
 
 // AQUÍ SE GUARDAN LAS SALAS
 let salas = {};
