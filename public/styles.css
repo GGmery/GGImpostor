@@ -554,6 +554,15 @@ hr {
     border-color: rgba(145, 71, 255, 0.5);
 }
 
+.jugador-mesa.eliminado {
+    opacity: 0.5;
+}
+
+.jugador-mesa.eliminado .jugador-mesa-avatar {
+    filter: grayscale(70%);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
 .jugador-mesa-nombre {
     background: rgba(0, 0, 0, 0.5);
     padding: 4px 10px;

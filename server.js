@@ -123,7 +123,8 @@ io.on('connection', (socket) => {
                 todosJugadores: jugadores.map(j => ({
                     id: j.id,
                     nombre: j.nombre,
-                    avatar: j.avatar
+                    avatar: j.avatar,
+                    eliminado: j.eliminado || false
                 }))
             });
         });
@@ -139,9 +140,16 @@ io.on('connection', (socket) => {
         const codigo = datos.codigo;
         if (!salas[codigo]) return;
         
+        const jugador = salas[codigo].jugadores[socket.id];
+        
+        // No permitir que jugadores eliminados escriban
+        if (jugador.eliminado) {
+            socket.emit('errorTexto', 'Has sido eliminado y no puedes participar');
+            return;
+        }
+        
         console.log('Texto recibido de:', socket.id, 'Turno actual antes:', salas[codigo].turnoActual);
         
-        const jugador = salas[codigo].jugadores[socket.id];
         io.to(codigo).emit('textoRecibido', {
             jugadorId: socket.id,
             nombre: jugador.nombre,
@@ -175,6 +183,14 @@ io.on('connection', (socket) => {
         const codigo = datos.codigo;
         if (!salas[codigo]) return;
         
+        const jugador = salas[codigo].jugadores[socket.id];
+        
+        // No permitir que jugadores eliminados voten
+        if (jugador.eliminado) {
+            socket.emit('errorVoto', 'Has sido eliminado y no puedes votar');
+            return;
+        }
+        
         // No permitir votarse a sí mismo
         if (datos.votadoId === socket.id) {
             socket.emit('errorVoto', 'No puedes votarte a ti mismo');
@@ -204,12 +220,9 @@ io.on('connection', (socket) => {
         salas[codigo].votantes.add(socket.id);
         salas[codigo].votoAnterior[socket.id] = datos.votadoId;
         
-        // Actualizar contador de votos para todos
-        io.to(codigo).emit('actualizarVotos', salas[codigo].votos);
-        
-        // Si todos han votado, procesar resultado inmediatamente
-        const totalJugadores = Object.keys(salas[codigo].jugadores).length;
-        if (salas[codigo].votantes.size === totalJugadores) {
+        // Si todos los jugadores VIVOS han votado, procesar resultado
+        const jugadoresVivos = Object.values(salas[codigo].jugadores).filter(j => !j.eliminado);
+        if (salas[codigo].votantes.size === jugadoresVivos.length) {
             if (salas[codigo].timeoutVotacion) {
                 clearTimeout(salas[codigo].timeoutVotacion);
             }
@@ -290,13 +303,26 @@ function iniciarVotacion(codigo) {
     sala.votos = {};
     sala.votantes = new Set();
     
-    const jugadores = Object.values(sala.jugadores).map(j => ({
+    // Solo incluir jugadores vivos en las opciones de votación
+    const jugadoresVivos = Object.values(sala.jugadores).filter(j => !j.eliminado).map(j => ({
         id: j.id,
         nombre: j.nombre,
-        avatar: j.avatar
+        avatar: j.avatar,
+        eliminado: false
     }));
     
-    io.to(codigo).emit('faseVotacion', { jugadores });
+    // También enviar todos los jugadores (incluyendo eliminados) para mostrarlos en la UI
+    const todosJugadores = Object.values(sala.jugadores).map(j => ({
+        id: j.id,
+        nombre: j.nombre,
+        avatar: j.avatar,
+        eliminado: j.eliminado || false
+    }));
+    
+    io.to(codigo).emit('faseVotacion', { 
+        jugadores: jugadoresVivos,  // Solo vivos para votar
+        todosJugadores: todosJugadores  // Todos para mostrar
+    });
     io.to(codigo).emit('cambiarMusica', { track: 'votando' });
     
     // Después de 60 segundos, contar votos
@@ -360,13 +386,15 @@ function procesarResultadoVotacion(codigo) {
             io.to(codigo).emit('cambiarMusica', { track: 'impostorPierde' });
             sala.estado = 'FINALIZADO';
         } else {
-            // Eliminar jugador y continuar
-            delete sala.jugadores[eliminadoId];
+            // Marcar jugador como eliminado (no borrarlo para que siga viendo)
+            sala.jugadores[eliminadoId].eliminado = true;
             sala.ordenTurnos = sala.ordenTurnos.filter(id => id !== eliminadoId);
             
-            // Verificar si el impostor ganó (solo quedan 2 jugadores o menos)
-            const jugadoresRestantes = Object.values(sala.jugadores);
-            if (jugadoresRestantes.length <= 2) {
+            // Contar jugadores vivos
+            const jugadoresVivos = Object.values(sala.jugadores).filter(j => !j.eliminado);
+            
+            // Verificar si el impostor ganó (solo quedan 2 jugadores vivos o menos)
+            if (jugadoresVivos.length <= 2) {
                 // El impostor ganó
                 io.to(codigo).emit('cambiarMusica', { track: 'impostorGana' });
                 

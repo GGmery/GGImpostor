@@ -1,6 +1,7 @@
 const socket = io();
 
 let personajeSeleccionado = '1'; // Personaje por defecto
+let todosJugadoresActuales = []; // Guardar todos los jugadores incluyendo eliminados
 
 // --- SISTEMA DE MÚSICA ---
 const musicTracks = {
@@ -198,6 +199,9 @@ socket.on('juegoIniciado', (datos) => {
     
     // Mostrar tu personaje y rol
     document.getElementById('tuAvatar').src = `assets/icon (${miDatosJuego.avatar}).png`;
+    
+    // Guardar todos los jugadores (incluyendo eliminados)
+    todosJugadoresActuales = datos.todosJugadores;
     document.getElementById('tuNombre').textContent = miDatosJuego.nombre;
     
     const rolBadge = document.getElementById('tuRol');
@@ -235,7 +239,17 @@ socket.on('nuevoTurno', (datos) => {
     const textarea = document.getElementById('textoJugador');
     const btnEnviar = document.getElementById('btnEnviarTexto');
     
-    if (datos.esMiTurno) {
+    // Verificar si el jugador actual está eliminado
+    const miJugador = todosJugadoresActuales.find(j => j.id === socket.id);
+    const estoyEliminado = miJugador && miJugador.eliminado;
+    
+    if (estoyEliminado) {
+        // Jugador eliminado no puede escribir
+        textarea.disabled = true;
+        textarea.value = '';
+        textarea.placeholder = 'Has sido eliminado - Solo puedes observar';
+        btnEnviar.style.display = 'none';
+    } else if (datos.esMiTurno) {
         textarea.disabled = false;
         textarea.value = '';
         textarea.placeholder = 'Escribe tu mensaje aquí...';
@@ -283,15 +297,27 @@ socket.on('faseVotacion', (datos) => {
     document.getElementById('pantalla-juego').style.display = 'none';
     document.getElementById('pantalla-votacion').style.display = 'block';
     
-    // Mostrar opciones de voto
-    mostrarOpcionesVoto(datos.jugadores);
+    // Actualizar lista de todos los jugadores (para mostrar eliminados)
+    if (datos.todosJugadores) {
+        todosJugadoresActuales = datos.todosJugadores;
+        actualizarListaJugadoresJuego(datos.todosJugadores);
+    }
+    
+    // Verificar si el jugador actual está eliminado
+    const miJugador = todosJugadoresActuales.find(j => j.id === socket.id);
+    const estoyEliminado = miJugador && miJugador.eliminado;
+    
+    if (estoyEliminado) {
+        // Mostrar mensaje de que no puede votar
+        const container = document.getElementById('opcionesVoto');
+        container.innerHTML = '<p style="text-align: center; padding: 40px; font-size: 1.2rem; color: #888;">Has sido eliminado - Solo puedes observar</p>';
+    } else {
+        // Mostrar opciones de voto solo de jugadores vivos
+        mostrarOpcionesVoto(datos.jugadores);
+    }
     
     // Iniciar timer de votación
     iniciarTimer(60, 'timerVotacion');
-});
-
-socket.on('actualizarVotos', (votos) => {
-    actualizarContadorVotos(votos);
 });
 
 socket.on('resultadoVotacion', (datos) => {
@@ -368,8 +394,9 @@ function actualizarListaJugadoresJuego(jugadores) {
     const mesa = document.getElementById('mesaJugadores');
     
     mesa.innerHTML = jugadores.map((j) => {
+        const eliminadoClass = j.eliminado ? ' eliminado' : '';
         return `
-            <div class="jugador-mesa" data-jugador-id="${j.id}">
+            <div class="jugador-mesa${eliminadoClass}" data-jugador-id="${j.id}">
                 <img src="assets/icon (${j.avatar}).png" alt="${j.nombre}" class="jugador-mesa-avatar">
                 <span class="jugador-mesa-nombre">${j.nombre}</span>
             </div>
@@ -443,7 +470,6 @@ function mostrarOpcionesVoto(jugadores) {
         <div class="opcion-voto" onclick="votar('${j.id}')">
             <img src="assets/icon (${j.avatar}).png" alt="${j.nombre}">
             <p>${j.nombre}</p>
-            <p class="votos-count" data-jugador-id="${j.id}">0 votos</p>
         </div>
     `).join('');
 }
