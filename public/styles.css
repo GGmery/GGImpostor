@@ -186,25 +186,25 @@ hr {
 }
 
 .personaje.selected {
-    transform: scale(1.15);
+    transform: scale(1.3);
 }
 
 .personaje.selected .personaje-avatar {
-    box-shadow: 0 0 0 3px var(--twitch-purple);
-    transform: rotate(5deg);
+    border-width: 4px;
 }
 
 .personaje-avatar {
     width: 60px;
     height: 60px;
-    border-radius: 50%;
+    border-radius: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    border: 3px solid var(--border-color);
+    border: 3px solid;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     margin: 0 auto;
+    object-fit: cover;
 }
 
 #lista-jugadores {
@@ -227,4 +227,88 @@ hr {
 #btnIniciar {
     background-color: var(--accent-color);
     color: #000;
+}
+
+/* Control de Volumen */
+.volume-control {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: var(--card-bg);
+    border: 2px solid var(--border-color);
+    border-radius: 50px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: all 0.3s ease;
+    z-index: 999;
+}
+
+.volume-control:hover {
+    border-color: var(--twitch-purple);
+    box-shadow: 0 6px 20px var(--shadow-color), 0 0 15px rgba(145, 71, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.volume-icon {
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+}
+
+.volume-control:hover .volume-icon {
+    transform: scale(1.1);
+}
+
+.volume-slider {
+    width: 120px;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--twitch-purple) 0%, var(--border-color) 50%);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--twitch-purple);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(145, 71, 255, 0.5);
+    transition: all 0.2s ease;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 3px 12px rgba(145, 71, 255, 0.7);
+}
+
+.volume-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--twitch-purple);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px rgba(145, 71, 255, 0.5);
+    transition: all 0.2s ease;
+}
+
+.volume-slider::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 3px 12px rgba(145, 71, 255, 0.7);
+}
+
+.volume-percentage {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+    min-width: 35px;
+    text-align: right;
 }

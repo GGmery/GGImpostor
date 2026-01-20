@@ -57,6 +57,60 @@ io.on('connection', (socket) => {
         socket.emit('unionExitosa', { codigo });
     });
 
+    // INICIAR JUEGO
+    socket.on('iniciarJuego', (datos) => {
+        const codigo = datos.codigo;
+        if (!salas[codigo]) return;
+        
+        salas[codigo].estado = 'JUGANDO';
+        io.to(codigo).emit('juegoIniciado');
+        io.to(codigo).emit('cambiarMusica', { track: 'partida' });
+    });
+
+    // FASE DE VOTACIÓN
+    socket.on('iniciarVotacion', (datos) => {
+        const codigo = datos.codigo;
+        if (!salas[codigo]) return;
+        
+        salas[codigo].estado = 'VOTANDO';
+        io.to(codigo).emit('faseVotacion');
+        io.to(codigo).emit('cambiarMusica', { track: 'votando' });
+    });
+
+    // RESULTADO DE VOTACIÓN
+    socket.on('resultadoVotacion', (datos) => {
+        const codigo = datos.codigo;
+        if (!salas[codigo]) return;
+        
+        if (datos.impostorEliminado) {
+            // Si eliminaron al impostor, inocentes ganan
+            salas[codigo].estado = 'FINALIZADO';
+            io.to(codigo).emit('cambiarMusica', { track: 'impostorPierde' });
+        } else {
+            // Continuar jugando
+            salas[codigo].estado = 'JUGANDO';
+            io.to(codigo).emit('cambiarMusica', { track: 'partida' });
+        }
+    });
+
+    // IMPOSTOR GANA
+    socket.on('impostorGana', (datos) => {
+        const codigo = datos.codigo;
+        if (!salas[codigo]) return;
+        
+        salas[codigo].estado = 'FINALIZADO';
+        io.to(codigo).emit('cambiarMusica', { track: 'impostorGana' });
+    });
+
+    // IMPOSTOR PIERDE
+    socket.on('impostorPierde', (datos) => {
+        const codigo = datos.codigo;
+        if (!salas[codigo]) return;
+        
+        salas[codigo].estado = 'FINALIZADO';
+        io.to(codigo).emit('cambiarMusica', { track: 'impostorPierde' });
+    });
+
     socket.on('disconnect', () => {
         console.log('Usuario desconectado');
     });

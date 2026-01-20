@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impostor Streamer - ggmery</title>
+    <title>GGImpostor</title>
     <link rel="stylesheet" href="styles.css">
     <script src="/socket.io/socket.io.js"></script>
 </head>
@@ -17,34 +17,34 @@
     </div>
 
     <div id="menu-inicio">
-        <h1>Impostor Streamer</h1>
-        <input type="text" id="nombreInput" placeholder="Tu nombre de Streamer">
+        <h1>GGImpostor</h1>
+        <input type="text" id="nombreInput" placeholder="Tu nombre">
         
         <p class="label-text">Elige tu personaje:</p>
         <div id="selector-personajes">
-            <div class="personaje" data-color="red" onclick="seleccionarPersonaje('red')">
-                <div class="personaje-avatar" style="background-color: #ff4444;">🚀</div>
+            <div class="personaje" data-icon="1" data-color="#bb44ff" onclick="seleccionarPersonaje('1')">
+                <img src="assets/icon (1).png" alt="Personaje 1" class="personaje-avatar" style="border-color: #bb44ff;">
             </div>
-            <div class="personaje" data-color="blue" onclick="seleccionarPersonaje('blue')">
-                <div class="personaje-avatar" style="background-color: #4444ff;">🚀</div>
+            <div class="personaje" data-icon="2" data-color="#4444ff" onclick="seleccionarPersonaje('2')">
+                <img src="assets/icon (2).png" alt="Personaje 2" class="personaje-avatar" style="border-color: #4444ff;">
             </div>
-            <div class="personaje" data-color="green" onclick="seleccionarPersonaje('green')">
-                <div class="personaje-avatar" style="background-color: #44ff44;">🚀</div>
+            <div class="personaje" data-icon="3" data-color="#44ff44" onclick="seleccionarPersonaje('3')">
+                <img src="assets/icon (3).png" alt="Personaje 3" class="personaje-avatar" style="border-color: #44ff44;">
             </div>
-            <div class="personaje" data-color="yellow" onclick="seleccionarPersonaje('yellow')">
-                <div class="personaje-avatar" style="background-color: #ffff44;">🚀</div>
+            <div class="personaje" data-icon="4" data-color="#ff4444" onclick="seleccionarPersonaje('4')">
+                <img src="assets/icon (4).png" alt="Personaje 4" class="personaje-avatar" style="border-color: #ff4444;">
             </div>
-            <div class="personaje" data-color="purple" onclick="seleccionarPersonaje('purple')">
-                <div class="personaje-avatar" style="background-color: #bb44ff;">🚀</div>
+            <div class="personaje" data-icon="5" data-color="#ffff44" onclick="seleccionarPersonaje('5')">
+                <img src="assets/icon (5).png" alt="Personaje 5" class="personaje-avatar" style="border-color: #ffff44;">
             </div>
-            <div class="personaje" data-color="orange" onclick="seleccionarPersonaje('orange')">
-                <div class="personaje-avatar" style="background-color: #ff8844;">🚀</div>
+            <div class="personaje" data-icon="6" data-color="#ff8844" onclick="seleccionarPersonaje('6')">
+                <img src="assets/icon (6).png" alt="Personaje 6" class="personaje-avatar" style="border-color: #ff8844;">
             </div>
-            <div class="personaje" data-color="pink" onclick="seleccionarPersonaje('pink')">
-                <div class="personaje-avatar" style="background-color: #ff44aa;">🚀</div>
+            <div class="personaje" data-icon="7" data-color="#ff44aa" onclick="seleccionarPersonaje('7')">
+                <img src="assets/icon (7).png" alt="Personaje 7" class="personaje-avatar" style="border-color: #ff44aa;">
             </div>
-            <div class="personaje" data-color="cyan" onclick="seleccionarPersonaje('cyan')">
-                <div class="personaje-avatar" style="background-color: #44ffff;">🚀</div>
+            <div class="personaje" data-icon="8" data-color="#44ffff" onclick="seleccionarPersonaje('8')">
+                <img src="assets/icon (8).png" alt="Personaje 8" class="personaje-avatar" style="border-color: #44ffff;">
             </div>
         </div>
         
@@ -61,9 +61,19 @@
         
         <div id="lista-jugadores"></div>
 
-        <button id="btnIniciar" style="display: none;" onclick="iniciarJuego()">¡Empezar Directo!</button>
+        <button id="btnIniciar" style="display: none;" onclick="iniciarJuego()">¡Empezar Juego!</button>
         <p id="esperandoTexto" style="font-size: 0.8rem; color: #71717a;">Esperando a que el líder empiece...</p>
     </div>
+
+    <!-- Control de Volumen -->
+    <div class="volume-control">
+        <span class="volume-icon">🔊</span>
+        <input type="range" id="volumeSlider" min="0" max="100" value="50" class="volume-slider">
+        <span class="volume-percentage">50%</span>
+    </div>
+
+    <!-- Audio Player (oculto) -->
+    <audio id="gameMusic" loop></audio>
 
     <script src="game.js"></script>
 </body>
