@@ -7,7 +7,8 @@ const fs = require('fs');
 app.use(express.static('public'));
 
 // Cargar palabras
-const palabras = JSON.parse(fs.readFileSync('./palabras.json', 'utf8'));
+const palabrasData = JSON.parse(fs.readFileSync('./palabras.json', 'utf8'));
+const palabras = palabrasData.palabras;
 
 // AQUÍ SE GUARDAN LAS SALAS
 let salas = {};
@@ -148,16 +149,54 @@ io.on('connection', (socket) => {
         const codigo = datos.codigo;
         if (!salas[codigo]) return;
         
+        // No permitir votarse a sí mismo
+        if (datos.votadoId === socket.id) {
+            socket.emit('errorVoto', 'No puedes votarte a ti mismo');
+            return;
+        }
+        
         if (!salas[codigo].votos) salas[codigo].votos = {};
+        if (!salas[codigo].votantes) salas[codigo].votantes = new Set();
+        
+        // Verificar que no haya votado ya
+        if (salas[codigo].votantes.has(socket.id)) return;
         
         // Registrar voto
         if (!salas[codigo].votos[datos.votadoId]) {
             salas[codigo].votos[datos.votadoId] = 0;
         }
         salas[codigo].votos[datos.votadoId]++;
+        salas[codigo].votantes.add(socket.id);
         
         // Actualizar contador de votos para todos
         io.to(codigo).emit('actualizarVotos', salas[codigo].votos);
+        
+        // Si todos han votado, procesar resultado inmediatamente
+        const totalJugadores = Object.keys(salas[codigo].jugadores).length;
+        if (salas[codigo].votantes.size === totalJugadores) {
+            if (salas[codigo].timeoutVotacion) {
+                clearTimeout(salas[codigo].timeoutVotacion);
+            }
+            setTimeout(() => procesarResultadoVotacion(codigo), 2000);
+        }
+    });
+
+    // REINICIAR PARTIDA
+    socket.on('reiniciarPartida', (datos) => {
+        const codigo = datos.codigo;
+        if (!salas[codigo]) return;
+        
+        const jugador = salas[codigo].jugadores[socket.id];
+        if (!jugador || !jugador.esLider) return;
+        
+        // Resetear estado de la sala
+        salas[codigo].estado = 'LOBBY';
+        
+        // Enviar a todos de vuelta a la sala de espera
+        io.to(codigo).emit('volverASala', {
+            codigo,
+            jugadores: Object.values(salas[codigo].jugadores)
+        });
     });
 
     socket.on('disconnect', () => {
@@ -205,6 +244,7 @@ function iniciarVotacion(codigo) {
     const sala = salas[codigo];
     sala.estado = 'VOTANDO';
     sala.votos = {};
+    sala.votantes = new Set();
     
     const jugadores = Object.values(sala.jugadores).map(j => ({
         id: j.id,
@@ -216,7 +256,7 @@ function iniciarVotacion(codigo) {
     io.to(codigo).emit('cambiarMusica', { track: 'votando' });
     
     // Después de 60 segundos, contar votos
-    setTimeout(() => {
+    sala.timeoutVotacion = setTimeout(() => {
         procesarResultadoVotacion(codigo);
     }, 60000);
 }

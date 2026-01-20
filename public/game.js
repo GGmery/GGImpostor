@@ -182,6 +182,7 @@ socket.on('cambiarMusica', (datos) => {
 let miDatosJuego = null;
 let turnoActual = null;
 let timerInterval = null;
+let soyLider = false;
 
 socket.on('juegoIniciado', (datos) => {
     console.log('¡El juego ha comenzado!', datos);
@@ -293,6 +294,31 @@ socket.on('resultadoVotacion', (datos) => {
     mostrarResultadoVotacion(datos);
 });
 
+socket.on('errorVoto', (msg) => {
+    alert(msg);
+    miVoto = null; // Permitir votar de nuevo
+});
+
+socket.on('volverASala', (datos) => {
+    // Ocultar todas las pantallas
+    document.getElementById('pantalla-juego').style.display = 'none';
+    document.getElementById('pantalla-votacion').style.display = 'none';
+    
+    // Mostrar sala de espera
+    document.getElementById('sala-espera').style.display = 'block';
+    document.getElementById('mostrarCodigo').innerText = datos.codigo;
+    
+    // Actualizar lista de jugadores
+    actualizarListaUI(datos.jugadores);
+    
+    // Reproducir música de inicio
+    playMusic('inicio');
+    
+    // Resetear variables
+    miVoto = null;
+    miDatosJuego = null;
+});
+
 // --- UTILIDADES ---
 
 function entrarALaSala(codigo) {
@@ -311,7 +337,7 @@ function actualizarListaUI(jugadores) {
         </p>
     `).join('');
 
-    const soyLider = jugadores.find(j => j.id === socket.id && j.esLider);
+    soyLider = jugadores.find(j => j.id === socket.id && j.esLider) ? true : false;
     document.getElementById('btnIniciar').style.display = soyLider ? 'block' : 'none';
     document.getElementById('esperandoTexto').style.display = soyLider ? 'none' : 'block';
 }
@@ -436,14 +462,16 @@ function mostrarResultadoVotacion(datos) {
     const resultadosDiv = document.getElementById('resultadosVotacion');
     resultadosDiv.style.display = 'block';
     
+    let contenidoHTML = '';
+    
     if (datos.empate) {
-        resultadosDiv.innerHTML = `
+        contenidoHTML = `
             <h3>¡EMPATE!</h3>
             <p>Nadie fue eliminado. El juego continúa...</p>
         `;
     } else {
         const eliminado = datos.eliminado;
-        resultadosDiv.innerHTML = `
+        contenidoHTML = `
             <h3>${eliminado.nombre} fue eliminado</h3>
             <img src="assets/icon (${eliminado.avatar}).png" style="width: 100px; height: 100px; border-radius: 15px; margin: 15px 0;">
             <p style="font-size: 1.2rem; font-weight: bold;">
@@ -452,15 +480,26 @@ function mostrarResultadoVotacion(datos) {
         `;
     }
     
-    // Volver al juego o mostrar pantalla final después de 5 segundos
-    setTimeout(() => {
-        if (datos.juegoTerminado) {
-            // Aquí podrías mostrar una pantalla final
-        } else {
-            // Volver a la fase de juego
+    resultadosDiv.innerHTML = contenidoHTML;
+    
+    // Mostrar botón de reiniciar solo al líder si el juego terminó
+    if (datos.juegoTerminado) {
+        const btnReiniciar = document.getElementById('btnReiniciar');
+        if (soyLider) {
+            btnReiniciar.style.display = 'block';
+            resultadosDiv.appendChild(btnReiniciar);
+        }
+    } else {
+        // Volver al juego después de 5 segundos
+        setTimeout(() => {
             miVoto = null;
             document.getElementById('pantalla-votacion').style.display = 'none';
             document.getElementById('pantalla-juego').style.display = 'block';
-        }
-    }, 5000);
+        }, 5000);
+    }
+}
+
+function reiniciarPartida() {
+    const codigo = document.getElementById('mostrarCodigo').innerText;
+    socket.emit('reiniciarPartida', { codigo });
 }
