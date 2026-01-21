@@ -167,15 +167,53 @@ io.on('connection', (socket) => {
             console.log('Turno actual después:', salas[codigo].turnoActual, 'Total turnos:', salas[codigo].ordenTurnos.length);
             
             if (salas[codigo].turnoActual >= salas[codigo].ordenTurnos.length) {
-                // Todos jugaron, iniciar votación
-                console.log('Todos jugaron, iniciando votación');
-                iniciarVotacion(codigo);
+                // Todos jugaron, iniciar votación de decisión
+                console.log('Todos jugaron, iniciando votación de decisión');
+                iniciarVotacionDecision(codigo);
             } else {
                 // Siguiente turno
                 console.log('Siguiente turno');
                 iniciarSiguienteTurno(codigo);
             }
         }, 1000);
+    });
+
+    // VOTAR DECISIÓN (Otra ronda o votar impostor)
+    socket.on('votarDecision', (datos) => {
+        const codigo = datos.codigo;
+        if (!salas[codigo]) return;
+        
+        const jugador = salas[codigo].jugadores[socket.id];
+        
+        // No permitir que jugadores eliminados voten
+        if (jugador.eliminado) {
+            socket.emit('errorVoto', 'Has sido eliminado y no puedes votar');
+            return;
+        }
+        
+        if (!salas[codigo].votosDecision) salas[codigo].votosDecision = { 'otra-ronda': 0, 'votar-impostor': 0 };
+        if (!salas[codigo].votantesDecision) salas[codigo].votantesDecision = new Set();
+        if (!salas[codigo].votoAnteriorDecision) salas[codigo].votoAnteriorDecision = {};
+        
+        // Si ya había votado, restar el voto anterior
+        if (salas[codigo].votoAnteriorDecision[socket.id]) {
+            const votoAnterior = salas[codigo].votoAnteriorDecision[socket.id];
+            salas[codigo].votosDecision[votoAnterior]--;
+        }
+        
+        // Registrar nuevo voto
+        salas[codigo].votosDecision[datos.decision]++;
+        salas[codigo].votantesDecision.add(socket.id);
+        salas[codigo].votoAnteriorDecision[socket.id] = datos.decision;
+        
+        // Si todos los jugadores VIVOS han votado, procesar resultado
+        const jugadoresVivos = Object.values(salas[codigo].jugadores).filter(j => !j.eliminado);
+        if (salas[codigo].votantesDecision.size === jugadoresVivos.length) {
+            if (salas[codigo].timeoutDecision) {
+                clearTimeout(salas[codigo].timeoutDecision);
+            }
+            setTimeout(() => procesarResultadoDecision(codigo), 2000);
+        }
     });
 
     // VOTAR
@@ -241,11 +279,26 @@ io.on('connection', (socket) => {
         // Resetear estado de la sala
         salas[codigo].estado = 'LOBBY';
         
+        // Resetear estado de todos los jugadores (quitar eliminados, impostores, etc)
+        Object.keys(salas[codigo].jugadores).forEach(id => {
+            delete salas[codigo].jugadores[id].eliminado;
+            delete salas[codigo].jugadores[id].esImpostor;
+        });
+        
+        // Limpiar datos de la partida
+        delete salas[codigo].ordenTurnos;
+        delete salas[codigo].turnoActual;
+        delete salas[codigo].votos;
+        delete salas[codigo].votantes;
+        delete salas[codigo].votoAnterior;
+        
         // Enviar a todos de vuelta a la sala de espera
         io.to(codigo).emit('volverASala', {
             codigo,
             jugadores: Object.values(salas[codigo].jugadores)
         });
+        
+        io.to(codigo).emit('cambiarMusica', { track: 'inicio' });
     });
 
     socket.on('disconnect', () => {
@@ -281,18 +334,76 @@ function iniciarSiguienteTurno(codigo) {
         });
     });
     
-    // Después de 60 segundos, pasar al siguiente turno o iniciar votación
+    // Después de 60 segundos, pasar al siguiente turno o iniciar votación de decisión
     sala.timeoutTurno = setTimeout(() => {
         sala.turnoActual++;
         
         if (sala.turnoActual >= sala.ordenTurnos.length) {
-            // Todos jugaron, iniciar votación
-            iniciarVotacion(codigo);
+            // Todos jugaron, iniciar votación de decisión
+            iniciarVotacionDecision(codigo);
         } else {
             // Siguiente turno
             iniciarSiguienteTurno(codigo);
         }
     }, 60000); // 60 segundos
+}
+
+function iniciarVotacionDecision(codigo) {
+    if (!salas[codigo]) return;
+    
+    const sala = salas[codigo];
+    sala.estado = 'VOTANDO_DECISION';
+    sala.votosDecision = { 'otra-ronda': 0, 'votar-impostor': 0 };
+    sala.votantesDecision = new Set();
+    sala.votoAnteriorDecision = {};
+    
+    io.to(codigo).emit('faseDecision');
+    
+    // Después de 30 segundos, contar votos
+    sala.timeoutDecision = setTimeout(() => {
+        procesarResultadoDecision(codigo);
+    }, 30000); // 30 segundos
+}
+
+function procesarResultadoDecision(codigo) {
+    if (!salas[codigo]) return;
+    
+    const sala = salas[codigo];
+    const votosOtraRonda = sala.votosDecision['otra-ronda'] || 0;
+    const votosVotarImpostor = sala.votosDecision['votar-impostor'] || 0;
+    
+    let decision;
+    if (votosOtraRonda > votosVotarImpostor) {
+        decision = 'otra-ronda';
+    } else if (votosVotarImpostor > votosOtraRonda) {
+        decision = 'votar-impostor';
+    } else {
+        // En caso de empate, por defecto otra ronda
+        decision = 'otra-ronda';
+    }
+    
+    io.to(codigo).emit('resultadoDecision', { decision, votosOtraRonda, votosVotarImpostor });
+    
+    setTimeout(() => {
+        if (decision === 'otra-ronda') {
+            // Reiniciar turnos para otra ronda
+            sala.turnoActual = 0;
+            sala.estado = 'JUGANDO';
+            delete sala.votosDecision;
+            delete sala.votantesDecision;
+            delete sala.votoAnteriorDecision;
+            
+            io.to(codigo).emit('cambiarMusica', { track: 'partida' });
+            iniciarSiguienteTurno(codigo);
+        } else {
+            // Ir a votación del impostor
+            delete sala.votosDecision;
+            delete sala.votantesDecision;
+            delete sala.votoAnteriorDecision;
+            
+            iniciarVotacion(codigo);
+        }
+    }, 4000); // 4 segundos para ver el resultado
 }
 
 function iniciarVotacion(codigo) {

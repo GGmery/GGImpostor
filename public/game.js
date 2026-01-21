@@ -290,6 +290,83 @@ socket.on('textoRecibido', (datos) => {
     marcarJugadorCompletado(datos.jugadorId);
 });
 
+socket.on('faseDecision', () => {
+    console.log('Fase de decisión iniciada');
+    
+    // Ocultar pantalla de juego y mostrar pantalla de decisión
+    document.getElementById('pantalla-juego').style.display = 'none';
+    document.getElementById('pantalla-decision').style.display = 'block';
+    
+    // Resetear votación de decisión
+    miVotoDecision = null;
+    document.getElementById('resultadoDecision').style.display = 'none';
+    
+    // Restaurar opciones
+    document.querySelectorAll('.opcion-decision').forEach(op => {
+        op.classList.remove('votado');
+        op.style.pointerEvents = 'auto';
+        op.style.opacity = '1';
+    });
+    
+    // Verificar si el jugador actual está eliminado
+    const miJugador = todosJugadoresActuales.find(j => j.id === socket.id);
+    const estoyEliminado = miJugador && miJugador.eliminado;
+    
+    if (estoyEliminado) {
+        // Mostrar mensaje de que no puede votar
+        const container = document.querySelector('.opciones-decision');
+        container.innerHTML = '<p style="text-align: center; padding: 40px; font-size: 1.2rem; color: #888;">Has sido eliminado - Solo puedes observar</p>';
+    }
+    
+    // Iniciar timer de decisión (30 segundos)
+    iniciarTimer(30, 'timerDecision');
+});
+
+socket.on('resultadoDecision', (datos) => {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+    
+    const resultadoDiv = document.getElementById('resultadoDecision');
+    resultadoDiv.style.display = 'block';
+    
+    let mensaje = '';
+    if (datos.decision === 'otra-ronda') {
+        mensaje = `
+            <h3>🔄 ¡Otra Ronda!</h3>
+            <p>La mayoría ha votado por continuar escribiendo palabras</p>
+            <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">
+                Otra Ronda: ${datos.votosOtraRonda} votos | 
+                Votar Impostor: ${datos.votosVotarImpostor} votos
+            </p>
+        `;
+    } else {
+        mensaje = `
+            <h3>🗳️ ¡A votar!</h3>
+            <p>La mayoría ha votado por identificar al impostor</p>
+            <p style="font-size: 0.9rem; color: #888; margin-top: 10px;">
+                Otra Ronda: ${datos.votosOtraRonda} votos | 
+                Votar Impostor: ${datos.votosVotarImpostor} votos
+            </p>
+        `;
+    }
+    
+    resultadoDiv.innerHTML = mensaje;
+    
+    // Después de 4 segundos, la pantalla cambiará automáticamente desde el servidor
+    setTimeout(() => {
+        if (datos.decision === 'otra-ronda') {
+            // Volver a la pantalla de juego
+            document.getElementById('pantalla-decision').style.display = 'none';
+            document.getElementById('pantalla-juego').style.display = 'block';
+        } else {
+            // Ir a pantalla de votación (el servidor enviará el evento faseVotacion)
+            document.getElementById('pantalla-decision').style.display = 'none';
+        }
+    }, 4000);
+});
+
 socket.on('faseVotacion', (datos) => {
     console.log('Fase de votación iniciada');
     
@@ -349,6 +426,13 @@ socket.on('volverASala', (datos) => {
     // Ocultar todas las pantallas
     document.getElementById('pantalla-juego').style.display = 'none';
     document.getElementById('pantalla-votacion').style.display = 'none';
+    document.getElementById('pantalla-decision').style.display = 'none';
+    document.getElementById('resultadosVotacion').style.display = 'none';
+    document.getElementById('resultadoDecision').style.display = 'none';
+    
+    // Limpiar resultados de votación
+    document.getElementById('resultadosVotacion').innerHTML = '';
+    document.getElementById('resultadoDecision').innerHTML = '';
     
     // Mostrar sala de espera
     document.getElementById('sala-espera').style.display = 'block';
@@ -357,12 +441,18 @@ socket.on('volverASala', (datos) => {
     // Actualizar lista de jugadores
     actualizarListaUI(datos.jugadores);
     
-    // Reproducir música de inicio
-    playMusic('inicio');
-    
-    // Resetear variables
+    // Resetear variables del juego
     miVoto = null;
+    miVotoDecision = null;
     miDatosJuego = null;
+    turnoActual = null;
+    todosJugadoresActuales = [];
+    
+    // Limpiar timer si existe
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
 });
 
 // --- UTILIDADES ---
@@ -475,6 +565,30 @@ function mostrarOpcionesVoto(jugadores) {
 }
 
 let miVoto = null;
+let miVotoDecision = null;
+
+function votarDecision(decision) {
+    // Si ya votó por esta misma opción, no hacer nada
+    if (miVotoDecision === decision) return;
+    
+    // Si ya votó por otra opción, permitir cambiar el voto
+    if (miVotoDecision) {
+        // Restaurar visualmente el voto anterior
+        document.querySelectorAll('.opcion-decision').forEach(op => {
+            op.classList.remove('votado');
+        });
+    }
+    
+    miVotoDecision = decision;
+    const codigo = document.getElementById('mostrarCodigo').innerText;
+    socket.emit('votarDecision', { codigo, decision });
+    
+    // Marcar visualmente el nuevo voto
+    const opcionVotada = document.querySelector(`.opcion-decision[onclick="votarDecision('${decision}')"]`);
+    if (opcionVotada) {
+        opcionVotada.classList.add('votado');
+    }
+}
 
 function votar(jugadorId) {
     // No permitir votarse a sí mismo
@@ -571,11 +685,20 @@ function mostrarResultadoVotacion(datos) {
     
     // Mostrar botón de reiniciar solo al líder si el juego terminó
     if (datos.juegoTerminado) {
-        const btnReiniciar = document.getElementById('btnReiniciar');
         if (soyLider) {
-            btnReiniciar.style.display = 'block';
-            resultadosDiv.appendChild(btnReiniciar);
+            contenidoHTML += `
+                <button onclick="reiniciarPartida()" class="btn-primary" style="margin-top: 20px; padding: 15px 30px; font-size: 1.1rem;">
+                    🔄 Volver a Jugar
+                </button>
+            `;
+        } else {
+            contenidoHTML += `
+                <p style="margin-top: 20px; font-size: 1rem; color: #888;">
+                    Esperando a que el líder reinicie la partida...
+                </p>
+            `;
         }
+        resultadosDiv.innerHTML = contenidoHTML;
     } else {
         // Volver al juego después de 5 segundos
         setTimeout(() => {

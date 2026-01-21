@@ -800,6 +800,100 @@ hr {
     background: var(--twitch-hover);
 }
 
+/* Pantalla de Decisión */
+#pantalla-decision {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px var(--shadow-color);
+    width: 90%;
+    max-width: 700px;
+    border: 1px solid var(--border-color);
+    text-align: center;
+}
+
+.opciones-decision {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 30px 0;
+}
+
+.opcion-decision {
+    background: var(--input-bg);
+    padding: 30px 20px;
+    border-radius: 15px;
+    border: 3px solid var(--border-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.opcion-decision::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, transparent, rgba(145, 71, 255, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.opcion-decision:hover {
+    border-color: var(--twitch-purple);
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(145, 71, 255, 0.3);
+}
+
+.opcion-decision:hover::before {
+    opacity: 1;
+}
+
+.opcion-decision.votado {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+    background: rgba(0, 255, 136, 0.1);
+}
+
+.icono-decision {
+    font-size: 4rem;
+    margin-bottom: 15px;
+}
+
+.opcion-decision h3 {
+    margin: 10px 0;
+    color: var(--text-color);
+    font-size: 1.5rem;
+}
+
+.opcion-decision p {
+    margin: 0;
+    color: #888;
+    font-size: 0.95rem;
+}
+
+.resultado-decision {
+    margin-top: 30px;
+    padding: 20px;
+    background: var(--input-bg);
+    border-radius: 10px;
+    border: 2px solid var(--border-color);
+}
+
+.resultado-decision h3 {
+    color: var(--twitch-purple);
+    margin-bottom: 10px;
+    font-size: 1.5rem;
+}
+
+.resultado-decision p {
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
 /* Pantalla de Votación */
 #pantalla-votacion {
     background: var(--card-bg);

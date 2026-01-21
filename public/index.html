@@ -133,6 +133,28 @@
         </div>
     </div>
 
+    <!-- Pantalla de Decisión (Otra Ronda o Votar) -->
+    <div id="pantalla-decision" style="display: none;">
+        <h2>¿Qué queréis hacer?</h2>
+        <p style="font-size: 1rem; margin-bottom: 30px; color: #888;">Votad para decidir el siguiente paso</p>
+        <div class="timer-votacion" id="timerDecision">0:30</div>
+        
+        <div class="opciones-decision">
+            <div class="opcion-decision" onclick="votarDecision('otra-ronda')">
+                <div class="icono-decision">🔄</div>
+                <h3>Otra Ronda</h3>
+                <p>Seguir escribiendo palabras</p>
+            </div>
+            <div class="opcion-decision" onclick="votarDecision('votar-impostor')">
+                <div class="icono-decision">🗳️</div>
+                <h3>Votar Impostor</h3>
+                <p>Pasar a la votación</p>
+            </div>
+        </div>
+        
+        <div class="resultado-decision" id="resultadoDecision" style="display: none;"></div>
+    </div>
+
     <!-- Pantalla de Votación -->
     <div id="pantalla-votacion" style="display: none;">
         <h2>¿Quién es el Impostor?</h2>
